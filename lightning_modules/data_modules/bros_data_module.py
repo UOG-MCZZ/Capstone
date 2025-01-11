@@ -74,7 +74,7 @@ class BROSDataModule(pl.LightningDataModule):
         )
 
         elapsed_time = time.time() - start_time
-        print(f"Elapsed time for loading training data: {elapsed_time}", flush=True)
+        print(f"Elapsed time for loading training data: {elapsed_time}")
 
         return data_loader
 

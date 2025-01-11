@@ -22,21 +22,23 @@ def main():
     cfg = get_config()
     print(cfg)
 
+    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"  # prevent deadlock with tokenizer
+    os.environ["TORCH_USE_CUDA_DSA"] = "1"  # prevent deadlock with tokenizer
     os.environ["TOKENIZERS_PARALLELISM"] = "false"  # prevent deadlock with tokenizer
     seed_everything(cfg.seed)
 
-    callbacks = get_callbacks(cfg)
+    callbacks = get_callbacks(cfg) #for checkpoints, no longer used
     # plugins = get_plugins(cfg)
     loggers = get_loggers(cfg)
 
     trainer = Trainer(
-        # accelerator=cfg.train.accelerator,
-        accelerator="cpu",
+        accelerator=cfg.train.accelerator,
+        # accelerator="cpu",
         # gpus=torch.cuda.device_count(),
         max_epochs=cfg.train.max_epochs,
         # gradient_clip_val=cfg.train.clip_gradient_value,
         # gradient_clip_algorithm=cfg.train.clip_gradient_algorithm,
-        callbacks=callbacks,
+        # callbacks=callbacks,
         # plugins=plugins,
         sync_batchnorm=True,
         # precision=16 if cfg.train.use_fp16 else 32,

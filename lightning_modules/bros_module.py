@@ -31,6 +31,7 @@ class BROSModule(LightningModule):
         self.net = get_model(self.cfg)
         self.ignore_index = -100
         self.validation_step_outputs = []
+        self.training_step_outputs = []
 
         self.time_tracker = None
 
@@ -128,13 +129,13 @@ class BROSModule(LightningModule):
         if prefix.upper().strip() in ["TRAIN", "VAL"]:
             out_str += f"[epoch: {self.current_epoch}/{self.cfg.train.max_epochs}]"
 
-        if self.training:
-            lr = self.trainer._lightning_optimizers[0].param_groups[0]["lr"]
-            log_info_shell["lr"] = lr
+        # if self.training:
+        #     lr = self.trainer.optimizers()[0].param_groups[0]["lr"]
+        #     log_info_shell["lr"] = lr
 
         for key, value in log_info_shell.items():
             out_str += f" || {key}: {round(value, 5)}"
         out_str += f" || time: {round(time.time() - self.time_tracker, 1)}"
         out_str += " secs."
-        self.print(out_str, flush=True)
+        self.print(out_str)
         self.time_tracker = time.time()
