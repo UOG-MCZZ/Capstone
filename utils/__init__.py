@@ -11,7 +11,7 @@ from omegaconf import OmegaConf
 from omegaconf.dictconfig import DictConfig
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
-from pytorch_lightning.plugins import DDPPlugin
+from pytorch_lightning.strategies  import DDPStrategy
 
 
 def get_config(default_conf_file="./configs/default.yaml"):
@@ -110,7 +110,8 @@ def get_plugins(cfg):
     plugins = []
 
     if cfg.train.strategy.type == "ddp":
-        plugins.append(DDPPlugin())
+        # plugins.append(DDPStrategy())
+        pass
 
     return plugins
 

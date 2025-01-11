@@ -11,7 +11,7 @@ import torch.utils.data
 from overrides import overrides
 from pytorch_lightning import LightningModule
 from pytorch_lightning.loggers.tensorboard import TensorBoardLogger
-from pytorch_lightning.utilities.distributed import rank_zero_only
+# from pytorch_lightning.utilities.distributed import rank_zero_only
 from torch.optim import SGD, Adam, AdamW
 from torch.optim.lr_scheduler import LambdaLR
 
@@ -30,6 +30,7 @@ class BROSModule(LightningModule):
         self.cfg = cfg
         self.net = get_model(self.cfg)
         self.ignore_index = -100
+        self.validation_step_outputs = []
 
         self.time_tracker = None
 
@@ -95,7 +96,7 @@ class BROSModule(LightningModule):
 
         return optimizer
 
-    @rank_zero_only
+    # @rank_zero_only
     @overrides
     def on_fit_end(self):
         hparam_dict = cfg_to_hparams(self.cfg, {})
@@ -107,9 +108,9 @@ class BROSModule(LightningModule):
             tb_logger.log_hyperparams(hparam_dict, metric_dict)
 
     @overrides
-    def training_epoch_end(self, training_step_outputs):
+    def on_train_epoch_end(self):
         avg_loss = torch.tensor(0.0).to(self.device)
-        for step_out in training_step_outputs:
+        for step_out in self.training_step_outputs:
             avg_loss += step_out["loss"]
 
         log_dict = {"train_loss": avg_loss}

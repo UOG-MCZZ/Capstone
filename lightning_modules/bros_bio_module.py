@@ -22,7 +22,7 @@ class BROSBIOModule(BROSModule):
         }
 
     @overrides
-    def training_step(self, batch, batch_idx, *args):
+    def training_step(self, batch, batch_idx, *args, **kwargs):
         _, loss = self.net(batch)
 
         log_dict_input = {"train_loss": loss}
@@ -31,15 +31,15 @@ class BROSBIOModule(BROSModule):
 
     @torch.no_grad()
     @overrides
-    def validation_step(self, batch, batch_idx, *args):
+    def validation_step(self, batch, batch_idx, *args, **kwargs):
         head_outputs, loss = self.net(batch)
         step_out = do_eval_step(batch, head_outputs, loss, self.eval_kwargs)
         return step_out
 
     @torch.no_grad()
     @overrides
-    def validation_epoch_end(self, validation_step_outputs):
-        scores = do_eval_epoch_end(validation_step_outputs)
+    def on_validation_epoch_end(self):
+        scores = do_eval_epoch_end(self.validation_step_outputs)
         self.print(
             f"precision: {scores['precision']:.4f}, recall: {scores['recall']:.4f}, f1: {scores['f1']:.4f}"
         )
