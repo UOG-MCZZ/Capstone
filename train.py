@@ -32,14 +32,17 @@ def main():
     loggers = get_loggers(cfg)
 
     trainer = Trainer(
-        accelerator=cfg.train.accelerator,
-        # accelerator="cpu",
+        # accelerator=cfg.train.accelerator,
+        accelerator="cpu",
         # gpus=torch.cuda.device_count(),
         max_epochs=cfg.train.max_epochs,
-        # gradient_clip_val=cfg.train.clip_gradient_value,
-        # gradient_clip_algorithm=cfg.train.clip_gradient_algorithm,
+        gradient_clip_val=cfg.train.clip_gradient_value,
+        gradient_clip_algorithm=cfg.train.clip_gradient_algorithm,
         # callbacks=callbacks,
+        default_root_dir="checkpoints/",
+        enable_checkpointing=True,
         # plugins=plugins,
+        strategy="ddp_find_unused_parameters_true",
         sync_batchnorm=True,
         # precision=16 if cfg.train.use_fp16 else 32,
         # terminate_on_nan=False,

@@ -103,7 +103,7 @@ class BROSModule(LightningModule):
         hparam_dict = cfg_to_hparams(self.cfg, {})
         metric_dict = {"metric/dummy": 0}
 
-        tb_logger = get_specific_pl_logger(self.logger, TensorBoardLogger)
+        tb_logger = get_specific_pl_logger(self.loggers, TensorBoardLogger)
 
         if tb_logger:
             tb_logger.log_hyperparams(hparam_dict, metric_dict)
