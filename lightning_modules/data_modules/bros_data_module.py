@@ -71,6 +71,7 @@ class BROSDataModule(pl.LightningDataModule):
             shuffle=True,
             num_workers=self.cfg.train.num_workers,
             pin_memory=True,
+            persistent_workers=True
         )
 
         elapsed_time = time.time() - start_time
@@ -96,6 +97,7 @@ class BROSDataModule(pl.LightningDataModule):
             num_workers=self.cfg[mode].num_workers,
             pin_memory=True,
             drop_last=False,
+            persistent_workers=True
         )
 
         return data_loader
