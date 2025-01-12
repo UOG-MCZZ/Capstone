@@ -47,6 +47,7 @@ class BROSSPADEModule(BROSModule):
         self.print(
             f"precision: {scores['precision']:.4f}, recall: {scores['recall']:.4f}, f1: {scores['f1']:.4f}"
         )
+        self.validation_step_outputs.clear()
 
 
 def do_eval_step(batch, head_outputs, loss, eval_kwargs):

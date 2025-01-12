@@ -42,6 +42,7 @@ class BROSSPADERELModule(BROSModule):
         self.print(
             f"precision: {scores['precision']:.4f}, recall: {scores['recall']:.4f}, f1: {scores['f1']:.4f}"
         )
+        self.validation_step_outputs.clear()
 
 
 def do_eval_step(batch, head_outputs, loss, eval_kwargs):
@@ -128,6 +129,7 @@ def do_eval_epoch_end(step_outputs):
 
     precision = 0.0 if n_total_pred_rel == 0 else n_total_correct_rel / n_total_pred_rel
     recall = 0.0 if n_total_gt_rel == 0 else n_total_correct_rel / n_total_gt_rel
+    print("pred Count: ", n_total_pred_rel, "||", " other count: ", n_total_gt_rel)
     f1 = (
         0.0
         if recall * precision == 0

@@ -48,6 +48,7 @@ class BROSBIESModule(BROSModule):
         self.print(
             f"precision: {scores['precision']:.4f}, recall: {scores['recall']:.4f}, f1: {scores['f1']:.4f}"
         )
+        self.validation_step_outputs.clear()
 
 
 def get_label_map(dataset_root_path):
