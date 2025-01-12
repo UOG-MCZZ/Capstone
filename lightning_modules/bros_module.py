@@ -116,6 +116,7 @@ class BROSModule(LightningModule):
 
         log_dict = {"train_loss": avg_loss}
         self._log_shell(log_dict, prefix="train ")
+        self.training_step_outputs.clear()
 
     def _log_shell(self, log_info, prefix=""):
         log_info_shell = {}

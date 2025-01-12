@@ -37,6 +37,8 @@ class BROSBIESModule(BROSModule):
     def validation_step(self, batch, batch_idx, *args, **kwargs):
         head_outputs, loss = self.net(batch)
         step_out = do_eval_step(batch, head_outputs, loss, self.eval_kwargs)
+        self.validation_step_outputs.append(step_out)
+        self.training_step_outputs.append({"loss": loss, "pred": _})
         return step_out
 
     @torch.no_grad()

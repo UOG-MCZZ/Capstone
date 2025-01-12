@@ -27,6 +27,7 @@ class BROSBIOModule(BROSModule):
 
         log_dict_input = {"train_loss": loss}
         self.log_dict(log_dict_input, sync_dist=True)
+        self.training_step_outputs.append({"loss": loss, "pred": _})
         return loss
 
     @torch.no_grad()
@@ -34,6 +35,7 @@ class BROSBIOModule(BROSModule):
     def validation_step(self, batch, batch_idx, *args, **kwargs):
         head_outputs, loss = self.net(batch)
         step_out = do_eval_step(batch, head_outputs, loss, self.eval_kwargs)
+        self.validation_step_outputs.append(step_out)
         return step_out
 
     @torch.no_grad()
