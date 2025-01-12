@@ -9,6 +9,7 @@ import os
 import torch
 from pytorch_lightning import Trainer
 from lightning_fabric.utilities.seed import seed_everything
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 from lightning_modules.bros_bies_module import BROSBIESModule
 from lightning_modules.bros_bio_module import BROSBIOModule
@@ -19,6 +20,15 @@ from utils import get_callbacks, get_config, get_loggers, get_plugins
 
 
 def main():
+    torch.set_float32_matmul_precision('medium')
+    
+    checkpoint_callback = ModelCheckpoint(
+        save_top_k=5,
+        monitor="f1",
+        mode="max",
+        dirpath="checkpoints/",
+        filename="sample-{epoch:02d}-{f1:.2f}",
+    )
     cfg = get_config()
     print(cfg)
 
@@ -32,17 +42,18 @@ def main():
     loggers = get_loggers(cfg)
 
     trainer = Trainer(
-        # accelerator=cfg.train.accelerator,
-        accelerator="cpu",
+        accelerator=cfg.train.accelerator,
+        # accelerator="cpu",
         # gpus=torch.cuda.device_count(),
         max_epochs=cfg.train.max_epochs,
         gradient_clip_val=cfg.train.clip_gradient_value,
         gradient_clip_algorithm=cfg.train.clip_gradient_algorithm,
         # callbacks=callbacks,
+        callbacks=checkpoint_callback,
         default_root_dir="checkpoints/",
         enable_checkpointing=True,
         # plugins=plugins,
-        strategy="ddp_find_unused_parameters_true",
+        # strategy="ddp_find_unused_parameters_true",
         sync_batchnorm=True,
         # precision=16 if cfg.train.use_fp16 else 32,
         # terminate_on_nan=False,
