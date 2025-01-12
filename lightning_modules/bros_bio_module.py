@@ -45,6 +45,7 @@ class BROSBIOModule(BROSModule):
         self.print(
             f"precision: {scores['precision']:.4f}, recall: {scores['recall']:.4f}, f1: {scores['f1']:.4f}"
         )
+        self.log("f1", scores["f1"])
         self.validation_step_outputs.clear()
 
 
