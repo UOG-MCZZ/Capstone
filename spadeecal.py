@@ -13,6 +13,7 @@ import json
 import torch
 from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
+import numpy as np
 
 from lightning_modules.bros_bies_module import get_label_map
 from lightning_modules.data_modules.bros_dataset import BROSDataset
@@ -113,45 +114,75 @@ def main():
     )
 
     torch.set_printoptions(sci_mode=False)
-    print(head_outputs["el_outputs"].shape)
-    # print(head_outputs["el_outputs"][0])
-    print(head_outputs["el_outputs"][0][150][:20])
-    # json.dump(head_outputs["el_outputs"].item(), open("temp.json", "w"))
-    print(step_outputs[-1])
 
-    def get_logit(head_outputs, batch):
-        el_outputs = head_outputs["el_outputs"]
+    class_names = eval_kwargs["class_names"]
+    dummy_idx = eval_kwargs["dummy_idx"]
 
-        bsz, max_seq_length = batch["attention_mask"].shape
-        device = batch["attention_mask"].device
+    itc_outputs = head_outputs["itc_outputs"]
+    stc_outputs = head_outputs["stc_outputs"]
 
-        self_token_mask = (
-            torch.eye(max_seq_length, max_seq_length + 1).to(device).bool()
-        )
+    pr_itc_label = torch.argmax(itc_outputs, -1)[0]
+    pr_stc_label = torch.argmax(stc_outputs, -1)[0]
 
-        box_first_token_mask = torch.cat(
-            [
-                (batch["are_box_first_tokens"] == False),
-                torch.zeros([bsz, 1], dtype=torch.bool).to(device),
-            ],
-            axis=1,
-        )
-        el_outputs.masked_fill_(box_first_token_mask[:, None, :], -10000.0)
-        el_outputs.masked_fill_(self_token_mask[None, :, :], -10000.0)
 
-        mask = batch["are_box_first_tokens"].view(-1)
-
-        logits = el_outputs.view(-1, max_seq_length + 1)
-        logits = logits[mask]
-
-        return logits
+    pr_init_words = parse_initial_words(pr_itc_label, batch["are_box_first_tokens"][0], class_names)
+    pr_class_words = parse_subsequent_words(
+        pr_stc_label, batch["attention_mask"][0], pr_init_words, dummy_idx
+    )
     
-    logits = get_logit(head_outputs, batch)
-    print(logits.shape)
+    print(pr_itc_label, "is", pr_init_words)
+    print(pr_stc_label, "wa", pr_class_words)
+    
+def parse_initial_words(itc_label, box_first_token_mask, class_names):
+    itc_label_np = itc_label.cpu().numpy()
+    box_first_token_mask_np = box_first_token_mask.cpu().numpy()
 
-    pr_el_labels = torch.argmax(head_outputs["el_outputs"], -1)
-    print(pr_el_labels.shape)
-    print(pr_el_labels)
+    outputs = [[] for _ in range(len(class_names))]
+    for token_idx, label in enumerate(itc_label_np):
+        if box_first_token_mask_np[token_idx] and label != 0:
+            outputs[label].append(token_idx)
+
+    return outputs
+
+
+def parse_subsequent_words(stc_label, attention_mask, init_words, dummy_idx):
+    max_connections = 50
+
+    valid_stc_label = stc_label * attention_mask.bool()
+    valid_stc_label = valid_stc_label.cpu().numpy()
+    stc_label_np = stc_label.cpu().numpy()
+
+    valid_token_indices = np.where(
+        (valid_stc_label != dummy_idx) * (valid_stc_label != 0)
+    )
+
+    next_token_idx_dict = {}
+    for token_idx in valid_token_indices[0]:
+        next_token_idx_dict[stc_label_np[token_idx]] = token_idx
+
+    outputs = []
+    for init_token_indices in init_words:
+        sub_outputs = []
+        for init_token_idx in init_token_indices:
+            cur_token_indices = [init_token_idx]
+            for _ in range(max_connections):
+                if cur_token_indices[-1] in next_token_idx_dict:
+                    if (
+                        next_token_idx_dict[cur_token_indices[-1]]
+                        not in init_token_indices
+                    ):
+                        cur_token_indices.append(
+                            next_token_idx_dict[cur_token_indices[-1]]
+                        )
+                    else:
+                        break
+                else:
+                    break
+            sub_outputs.append(tuple(cur_token_indices))
+
+        outputs.append(sub_outputs)
+
+    return outputs
 
 def load_model_weight(net, pretrained_model_file):
     pretrained_model_state_dict = torch.load(pretrained_model_file, map_location="cpu")[

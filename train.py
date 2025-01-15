@@ -27,7 +27,7 @@ def main():
         monitor="f1",
         mode="max",
         dirpath="checkpoints/",
-        filename="sample-{epoch:02d}-{f1:.2f}",
+        filename="spade-{epoch:02d}-{f1:.2f}",
     )
     cfg = get_config()
     print(cfg)

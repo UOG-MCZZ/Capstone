@@ -1,0 +1,57 @@
+
+<!doctype html>
+<body>
+
+  <canvas id="Preview"></canvas>
+  <table>
+      <tr>
+          <th>Key</th>
+          <th>Value</th>
+      </tr>
+      {% for key, value in key_val %}
+      <tr>
+          <td>{{key}}</td>
+          <td>{{value}}</td>
+      </tr>
+      {% endfor %}
+  </table>
+</body>
+<script>
+const id2label = {0: 'O', 1: 'B-HEADER', 2: 'I-HEADER', 3: 'B-QUESTION', 4: 'I-QUESTION', 5: 'B-ANSWER', 6: 'I-ANSWER'}
+const id2color = ["violet", "orange", "orange", "blue", "blue", "green", "green"]
+
+const canva = document.getElementById("Preview")
+const ctx = canva.getContext("2d");
+const img = new Image();
+
+img.src = "/uploads/{{name}}"
+img.addEventListener("load", () => {
+  canva.width = img.width;
+  canva.height = img.height;
+  ctx.drawImage(img, 0, 0);
+});
+fetch("/process/{{name}}").then(res => res.json().then(j => {
+  for (var i = 0; i < j["boxes"].length; i++){
+    const bbox = j["boxes"][i]
+    let box = bbox;
+    box[3] = bbox[3] - bbox[1];
+    box[2] = bbox[2] - bbox[0];
+    console.log(j["pred"][i])
+    ctx.strokeStyle = id2color[j["pred"][i]]
+    ctx .strokeRect(...box);
+  }
+
+  ctx.strokeStyle = "black"
+  for (var i = 0; i < j["links"].length; i++){
+    const link = j["links"][i]
+    console.log(link);
+    let box = link[0];
+    box[3] = box[3] - box[1];
+    box[2] = box[2] - box[0];
+    ctx.moveTo(...box[0]);
+    box = link[1]
+    ctx.lineTo(...box[0]);
+    ctx .stroke();
+  }
+}))
+</script>
