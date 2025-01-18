@@ -59,9 +59,9 @@ def list_files():
 def process_document(name):
     img = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], name))
     results = gptinf.get_rel(img)
-    class_results = server.webDocParser.runInference(img)
-    print(type(results))
-    return {"links": results["link_boxes"], "key_val": results["key_val"], "pred": class_results["pred"], "boxes": class_results["boxes"]}
+    # class_results = server.webDocParser.runInference(img)
+    # print(type(results))
+    return {"links": results["link_boxes"], "key_val": results["key_val"], "pred": results["classes"], "boxes": results["block_bboxes"], "ocr_boxes": results["ocr_boxes"]}
 
 @app.route('/preview/<name2>')
 def preview_results(name2):
