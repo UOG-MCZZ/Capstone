@@ -54,12 +54,12 @@ def prepare_spade_rel(processed_data, img: Image, tokenizer: AutoTokenizer):
     sep_token_id = tokenizer.vocab["[SEP]"]
     unk_token_id = tokenizer.vocab["[UNK]"]
 
-    input_ids = np.ones(max_seq_length, dtype=int) * pad_token_id
+    input_ids = np.ones(max_seq_length, dtype=np.long) * pad_token_id
     bbox = np.zeros((max_seq_length, 8), dtype=np.float32)
-    attention_mask = np.zeros(max_seq_length, dtype=int)
+    attention_mask = np.zeros(max_seq_length, dtype=np.long)
 
     are_box_first_tokens = np.zeros(max_seq_length, dtype=np.bool_)
-    el_labels = np.ones(max_seq_length, dtype=int) * max_seq_length
+    el_labels = np.ones(max_seq_length, dtype=np.long) * max_seq_length
 
     list_tokens = []
     list_bbs = []
