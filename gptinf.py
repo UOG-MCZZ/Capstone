@@ -158,12 +158,12 @@ def prepare_spade_rel(processed_data, img: Image, tokenizer: AutoTokenizer):
     #     word_to = box2token_span_map[relation[1]][0]
     #     el_labels[word_to] = word_from
 
-    input_ids = torch.from_numpy(input_ids).unsqueeze(0).to(torch.device("cuda:0"))
-    bbox = torch.from_numpy(bbox).unsqueeze(0).to(torch.device("cuda:0"))
-    attention_mask = torch.from_numpy(attention_mask).unsqueeze(0).to(torch.device("cuda:0"))
+    input_ids = torch.from_numpy(input_ids).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
+    bbox = torch.from_numpy(bbox).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
+    attention_mask = torch.from_numpy(attention_mask).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
 
-    are_box_first_tokens = torch.from_numpy(are_box_first_tokens).unsqueeze(0).to(torch.device("cuda:0"))
-    el_labels = torch.from_numpy(el_labels).unsqueeze(0).to(torch.device("cuda:0"))
+    are_box_first_tokens = torch.from_numpy(are_box_first_tokens).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
+    el_labels = torch.from_numpy(el_labels).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
 
     return_dict = {
         "input_ids": input_ids,
