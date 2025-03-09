@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create a New Table  
+{% endblock %}
+
+{% block script %}
+    <script src="{{ url_for('static', filename='js/labelBoxes.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/addField.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="image-container">
+                    <canvas id="Preview"></canvas>
+                </div>
+                <div class="form-container" >
+                    <form method="POST">
+                            <label for="table_name"> Table Name:</label>
+                            <input type="text" id="table_name" name="table_name" required><br><br>   
+                        <div id="fields-container">
+                            <!-- Fields will be added dynamically here -->
+                        </div>       
+                        {% for key, value in key_val %}
+                            <script>addField('{{key}}', '{{value}}')</script>
+                        {% endfor %}  
+                        <button type="button" onclick="addField('' , '')">+ Add Field</button><br><br>
+                        <button type="submit">Create Table</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script>labelBoxes("{{ name }}")</script>
+{% endblock %}

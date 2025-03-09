@@ -1,0 +1,43 @@
+function addField(fieldName, fieldValue) {
+    var fieldDiv = document.createElement('div');
+    fieldDiv.classList.add('field-group');
+    
+    var fieldNameInput = document.createElement('input');
+    fieldNameInput.setAttribute('type', 'text');
+    fieldNameInput.setAttribute('name', 'field_name[]');
+    fieldNameInput.setAttribute('placeholder', 'Field name');
+    // fieldNameInput.setAttribute('pattern', '[a-zA-Z0-9]+');
+    fieldNameInput.value = fieldName;
+    fieldNameInput.disabled = true;
+    fieldNameInput.required = true;
+
+    var fieldValueInput = document.createElement('input');
+    fieldValueInput.setAttribute('type', 'text');
+    fieldValueInput.setAttribute('name', 'field_value[]');
+    fieldValueInput.setAttribute('placeholder', 'Field value');
+    fieldValueInput.value = fieldValue;
+
+    var fieldTypeSelect = document.createElement('select');
+    fieldTypeSelect.setAttribute('name', 'field_type[]');
+    var types = ['String', 'Integer', 'Boolean'];
+    types.forEach(function(type) {
+        var option = document.createElement('option');
+        option.setAttribute('value', type);
+        option.textContent = type;
+        fieldTypeSelect.appendChild(option);
+    });
+
+    var removeButton = document.createElement('button');
+    removeButton.textContent = 'X';
+    removeButton.type = 'button';
+    removeButton.onclick = function() {
+        fieldDiv.remove();
+    };
+
+    fieldDiv.appendChild(fieldNameInput);
+    fieldDiv.appendChild(fieldValueInput);
+    fieldDiv.appendChild(fieldTypeSelect);
+    fieldDiv.appendChild(removeButton);
+    
+    document.getElementById('fields-container').appendChild(fieldDiv);
+}

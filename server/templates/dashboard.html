@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create a New Table  
+{% endblock %}
+
+{% block script %}
+    <script >
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }        
+    </script>
+{% endblock %}
+
+<!-- Yeah, I gotta remake this -->
+<!-- This is just a base I have for now -->
+
+{% block content %}
+    <body>
+        <div class="main-content">
+            <h1>Welcome to Your Dashboard</h1>
+            <div class="card" onclick="toggleCard(this)">
+                <h3>Users</h3>
+                <p>1,234</p>
+                <div class="extra-info">
+                    <p>Active Users: 900</p>
+                    <p>New Users: 100</p>
+                </div>
+            </div>
+            <div class="card" onclick="toggleCard(this)">
+                <h3>Sales</h3>
+                <p>$12,345</p>
+                <div class="extra-info">
+                    <p>Last Month: $10,000</p>
+                    <p>Growth: 23%</p>
+                </div>
+            </div>
+            <div class="card" onclick="toggleCard(this)">
+                <h3>Orders</h3>
+                <p>567</p>
+                <div class="extra-info">
+                    <p>Pending: 50</p>
+                    <p>Completed: 500</p>
+                </div>
+            </div>
+        </div>
+    </body>
+{% endblock %}

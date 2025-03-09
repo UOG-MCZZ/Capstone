@@ -159,7 +159,7 @@ def prepare_spade_rel(processed_data, img: Image, tokenizer: AutoTokenizer):
     #     el_labels[word_to] = word_from
 
     input_ids = torch.from_numpy(input_ids).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
-    bbox = torch.from_numpy(bbox).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
+    bbox = torch.from_numpy(bbox).unsqueeze(0).to(torch.device("cuda:0"))
     attention_mask = torch.from_numpy(attention_mask).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
 
     are_box_first_tokens = torch.from_numpy(are_box_first_tokens).unsqueeze(0).type(torch.LongTensor).to(torch.device("cuda:0"))
@@ -379,6 +379,7 @@ def parse_subsequent_words(stc_label, attention_mask, init_words, dummy_idx):
 def get_rel(image: Image):
     image_data = prepare_image(image, net.tokenizer)
     input_dict = prepare_spade_rel(image_data, image, net.tokenizer)
+    print(input_dict['data'])
 
     # Run inference
     with torch.no_grad():
@@ -449,7 +450,9 @@ def get_rel(image: Image):
             class_info.append(c_idx)
             i += 1
             print(text)
-    
+    print("\n\nLinking Results")
+    print(pr_el_labels)
+
     for l in link:
         # print(data[l[0]]["word"], ":", data[l[1]]["word"])
         kv = (texts[sex_list[l[0]]], texts[sex_list[l[1]]])
@@ -474,7 +477,7 @@ def main():
     image = Image.open(image_path)
     print(get_rel(image))
 
-cfg = {'workspace': './finetune_funsd_el_spade__bros-large-uncased', 'dataset': 'funsd', 'task': 'el', 'dataset_root_path': './datasets/funsd_spade', 'pretrained_model_path': './pretrained_models', 'seed': 1, 'cudnn_deterministic': False, 'cudnn_benchmark': True, 'model': {'backbone': 'naver-clova-ocr/bros-large-uncased', 'head': 'spade_rel', 'head_hidden_size': 128, 'n_classes': 3, 'head_p_dropout': 0.1}, 'train': {'batch_size': 4, 'num_samples_per_epoch': 149, 'max_epochs': 100, 'use_fp16': True, 'accelerator': 'gpu', 'strategy': {'type': 'ddp'}, 'clip_gradient_algorithm': 'norm', 'clip_gradient_value': 1.0, 'num_workers': 11, 'optimizer': {'method': 'adamw', 'params': {'lr': 5e-05}, 'lr_schedule': {'method': 'linear', 'params': {'warmup_steps': 0}}}, 'val_interval': 1, 'max_seq_length': 512}, 'val': {'batch_size': 1, 'num_workers': 4, 'limit_val_batches': 1.0}, 'pretrained_model_file': 'checkpoints/large.ckpt', 'save_weight_dir': './finetune_funsd_el_spade__bros-large-uncased\\checkpoints', 'tensorboard_dir': './finetune_funsd_el_spade__bros-large-uncased\\tensorboard_logs'}
+cfg = {'workspace': 'S:/bros/finetune_funsd_el_spade__bros-large-uncased', 'dataset': 'funsd', 'task': 'el', 'dataset_root_path': 'S:/bros/datasets/funsd_spade', 'pretrained_model_path': 'S:/bros/pretrained_models', 'seed': 1, 'cudnn_deterministic': False, 'cudnn_benchmark': True, 'model': {'backbone': 'naver-clova-ocr/bros-large-uncased', 'head': 'spade_rel', 'head_hidden_size': 128, 'n_classes': 3, 'head_p_dropout': 0.1}, 'train': {'batch_size': 4, 'num_samples_per_epoch': 149, 'max_epochs': 100, 'use_fp16': True, 'accelerator': 'gpu', 'strategy': {'type': 'ddp'}, 'clip_gradient_algorithm': 'norm', 'clip_gradient_value': 1.0, 'num_workers': 11, 'optimizer': {'method': 'adamw', 'params': {'lr': 5e-05}, 'lr_schedule': {'method': 'linear', 'params': {'warmup_steps': 0}}}, 'val_interval': 1, 'max_seq_length': 512}, 'val': {'batch_size': 1, 'num_workers': 4, 'limit_val_batches': 1.0}, 'pretrained_model_file': 'S:/bros/checkpoints/large.ckpt', 'save_weight_dir': 'S:/bros/finetune_funsd_el_spade__bros-large-uncased\\checkpoints', 'tensorboard_dir': 'S:/bros/finetune_funsd_el_spade__bros-large-uncased\\tensorboard_logs'}
 cfg = OmegaConf.create(cfg)
 print(cfg)
 
@@ -485,8 +488,8 @@ load_model_weight(net, cfg.pretrained_model_file)
 net.to("cuda")
 net.eval()
 
-cfg_ee = {'workspace': './finetune_funsd_ee_spade__bros-base-uncased', 'dataset': 'funsd', 'task': 'ee', 'dataset_root_path': './datasets/funsd_spade', 'pretrained_model_path': './pretrained_models', 'seed': 1, 'cudnn_deterministic': False, 'cudnn_benchmark': True, 'model': {'backbone': 'naver-clova-ocr/bros-base-uncased', 'head': 'spade', 'head_hidden_size': 128, 'n_classes': 3, 'head_p_dropout': 0.1}, 'train': {'batch_size': 4, 'num_samples_per_epoch': 149, 'max_epochs': 100, 'use_fp16': True, 'accelerator': 'gpu', 'strategy': {'type': 'ddp'}, 'clip_gradient_algorithm': 'norm', 'clip_gradient_value': 1.0, 'num_workers': 11, 'optimizer': 
-{'method': 'adamw', 'params': {'lr': 5e-05}, 'lr_schedule': {'method': 'linear', 'params': {'warmup_steps': 0}}}, 'val_interval': 1, 'max_seq_length': 512}, 'val': {'batch_size': 4, 'num_workers': 4, 'limit_val_batches': 1.0}, 'pretrained_model_file': 'checkpoints/ee.ckpt', 'save_weight_dir': './finetune_funsd_ee_spade__bros-base-uncased\\checkpoints', 'tensorboard_dir': './finetune_funsd_ee_spade__bros-base-uncased\\tensorboard_logs'}
+cfg_ee = {'workspace': 'S:/bros/finetune_funsd_ee_spade__bros-base-uncased', 'dataset': 'funsd', 'task': 'ee', 'dataset_root_path': 'S:/bros/datasets/funsd_spade', 'pretrained_model_path': 'S:/bros/pretrained_models', 'seed': 1, 'cudnn_deterministic': False, 'cudnn_benchmark': True, 'model': {'backbone': 'naver-clova-ocr/bros-base-uncased', 'head': 'spade', 'head_hidden_size': 128, 'n_classes': 3, 'head_p_dropout': 0.1}, 'train': {'batch_size': 4, 'num_samples_per_epoch': 149, 'max_epochs': 100, 'use_fp16': True, 'accelerator': 'gpu', 'strategy': {'type': 'ddp'}, 'clip_gradient_algorithm': 'norm', 'clip_gradient_value': 1.0, 'num_workers': 11, 'optimizer': 
+{'method': 'adamw', 'params': {'lr': 5e-05}, 'lr_schedule': {'method': 'linear', 'params': {'warmup_steps': 0}}}, 'val_interval': 1, 'max_seq_length': 512}, 'val': {'batch_size': 4, 'num_workers': 4, 'limit_val_batches': 1.0}, 'pretrained_model_file': 'S:/bros/checkpoints/ee.ckpt', 'save_weight_dir': 'S:/bros/finetune_funsd_ee_spade__bros-base-uncased\\checkpoints', 'tensorboard_dir': 'S:/bros/finetune_funsd_ee_spade__bros-base-uncased\\tensorboard_logs'}
 cfg_ee = OmegaConf.create(cfg_ee)
 
 net_ee = get_model(cfg_ee)

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% block title %}
+        {% endblock %}
+    </title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block script %}
+    {% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="site_header_logo"> 
+            <img src="{{ url_for('static', filename='images/logo.svg') }}"/>
+        </a>
+        <div class="nav-container">
+            <div class="nav-item"><a href="#" class="nav-link">Home</a></div>
+            <div class="nav-item">
+                <a href="#" class="nav-link">About</a>
+                <div class="dropdown">
+                    <div><a href="#">Team</a></div>
+                    <div><a href="#">History</a></div>
+                    <div><a href="#">Mission</a></div>
+                </div>
+            </div>
+            <div class="nav-item"><a href="#" class="nav-link">Services</a></div>
+            <div class="nav-item"><a href="#" class="nav-link">Contact</a></div>
+        </div>
+        <div class="menu-toggle" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </nav>
+    <main>
+        {% block content  %}
+        {% endblock  %}
+    </main>
+</body>
+</html>

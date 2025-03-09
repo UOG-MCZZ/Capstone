@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create a New Table  
+{% endblock %}
+
+{% block content %}
+    <body>
+        <h2>Table Name: {{ table_name }}</h2>
+        <div class='table-container'>
+            <table>
+                <thead>
+                    <tr>
+                        {% for column in rows[0]._fields %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for column in row %}
+                                <td>{{ column }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </body>
+{% endblock %}

@@ -3,10 +3,10 @@ import os
 from flask import Flask, flash, request, redirect, url_for, send_from_directory, render_template
 from werkzeug.utils import secure_filename
 from PIL import Image
+from multiprocessing import freeze_support
 
 
 import gptinf
-import server.webDocParser
 
 UPLOAD_FOLDER = './'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
@@ -69,5 +69,6 @@ def preview_results(name2):
     results = process_document(name2)
     return render_template("demo.html", key_val=results["key_val"], name=name2)
 
-if __name__ == "__main__":
-    app.run()
+if __name__ == '__main__':
+    freeze_support()
+    app.run(port = 12494, debug=True)
