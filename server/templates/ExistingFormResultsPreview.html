@@ -19,7 +19,7 @@
                         <button id="ClearButton">Clear</button>
                         <button id="AllButton">All</button>
                         <button id="LinkedButton">Linked</button>
-                        <form id="uploadFileForm" onsubmit="uploadAndPreview">
+                        <form id="uploadFileForm">
                             <input type=file name=file>
                             <input type=submit value=Replace>
                         </form>
@@ -42,6 +42,12 @@
         </div>
     </body>
     <script>
+        const clearBtn = document.getElementById("ClearButton")
+        clearBtn.onclick = clearlabel
+        const linkBtn = document.getElementById("LinkedButton")
+        linkBtn.onclick = (e) => {drawLinkedBoxes("{{ name }}"); drawLinkLines("{{ name }}")}
+        const allBtn = document.getElementById("AllButton")
+        allBtn.onclick = (e) => drawAllBoxes("{{ name }}")
         drawLinkedBoxes("{{ name }}")
         drawLinkLines("{{ name }}")
     </script>
@@ -50,7 +56,7 @@
             const form = document.getElementById("uploadFileForm");
             const formData = new FormData(form);
             var filename;
-            for ([key, value] of form_data.entries()) {
+            for ([key, value] of formData.entries()) {
                 let val;
                 if (value instanceof File) {
                     val = value.name;
@@ -72,16 +78,19 @@
                 console.error(e);
             }
         }
-        function uploadAndPreview(e){
-            e.preventDefault();
+        const form = document.getElementById("uploadFileForm")
+        form.addEventListener("submit", (event) =>{
+            event.preventDefault();
             uploadFile().then((filename) => {
                 MLResults = undefined;
                 clearlabel();
-                const img = document.getElementById("Preview");
-                img.src = "/uploads/" + filename;
+                const imgContainer = document.getElementById("image-container")
+                imgContainer.removeChild(imgContainer.lastChild)
                 drawLinkedBoxes(filename);
                 drawLinkLines(filename);
+                linkBtn.onclick = (e) => {drawLinkedBoxes(filename); drawLinkLines(filename)}
+                allBtn.onclick = (e) => drawAllBoxes(filename)
             })
-        }
+        })
     </script>
 {% endblock %}

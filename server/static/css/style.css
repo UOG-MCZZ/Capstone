@@ -214,18 +214,17 @@ canvas {
 }
 
 .container {
-    width: 95%;
     padding: 20px;
     display: flex;
     flex-direction: column;
     gap: 20px;
     width: 100%;
     justify-content: center;
-    align-items: center;
+    /* align-items: center; */
 }
 
 .image-container {
-    max-width: 100%;
+    max-width: 34%;
     height: auto;
     border-radius: 10px;
     flex: 1; 
