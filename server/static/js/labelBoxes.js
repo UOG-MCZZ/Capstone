@@ -64,8 +64,68 @@ function drawLinkLines(name) {
       ctx .stroke();
     }
   })
+
+  return fetch("/process/" + name).then(res => res.json().then(j => {
+    MLResults = j;
+    return MLResults
+  }))
 }
 
+function drawLinkedBoxes (name) {
+  const id2color = ["violet", "orange", "blue", "green"]
+  const canva = document.getElementById("LabelPreview")
+  const ctx = canva.getContext("2d");
+
+  getMLResults(name).then((MLResults) => {
+    for (var i = 0; i < MLResults["boxes"].length; i++){
+      const bbox = MLResults["boxes"][i]
+      let box = [...bbox[0], ...bbox[2]];
+      box[3] = box[3] - box[1];
+      box[2] = box[2] - box[0];
+      console.log(MLResults["pred"][i])
+      console.log(box)
+      ctx.lineWidth = 10;
+      ctx.strokeStyle = id2color[MLResults["pred"][i]]
+      ctx .strokeRect(...box);
+    }
+  })
+}
+
+function drawLinkLines(name) {
+  const canva = document.getElementById("LabelPreview")
+  const ctx = canva.getContext("2d");
+  
+  getMLResults(name).then((MLResults) => {
+    ctx.strokeStyle = "black"
+    for (var i = 0; i < MLResults["links"].length; i++){
+      const link = MLResults["links"][i]
+      console.log(link);
+      let box = link[0];
+      ctx.moveTo(...box[1]);
+      box = link[1]
+      ctx.lineTo(...box[0]);
+      ctx .stroke();
+    }
+  })
+}
+
+function drawAllBoxes(name) {
+  const canva = document.getElementById("LabelPreview")
+  const ctx = canva.getContext("2d");
+  
+  getMLResults(name).then((MLResults) => {
+    ctx.strokeStyle = "red"
+    for (var i = 0; i < MLResults["ocr_boxes"].length; i++){
+      const bbox = MLResults["ocr_boxes"][i]
+      let box = [...bbox[0], ...bbox[2]];
+      box[3] = box[3] - box[1];
+      box[2] = box[2] - box[0];
+      ctx .strokeRect(...box);
+    }
+  })
+}
+
+function clearlabel () {
 function drawAllBoxes(name) {
   const canva = document.getElementById("LabelPreview")
   const ctx = canva.getContext("2d");

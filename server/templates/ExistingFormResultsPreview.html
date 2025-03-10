@@ -33,15 +33,59 @@
                         <div id="fields-container">
                             <!-- Fields will be added dynamically here -->
                         </div>
+                        </div>
                         {% for key, value in new_key_val.items() %}
                             <script>addField('{{key}}', '{{value}}')</script>
                         {% endfor %}  
+                        <button type="submit">Modify Data</button>
                         <button type="submit">Modify Data</button>
                     </form>
                 </div>
             </div>
         </div>
     </body>
+    <script>
+        drawLinkedBoxes("{{ name }}")
+        drawLinkLines("{{ name }}")
+    </script>
+    <script>
+        async function uploadFile(){
+            const form = document.getElementById("uploadFileForm");
+            const formData = new FormData(form);
+            var filename;
+            for ([key, value] of form_data.entries()) {
+                let val;
+                if (value instanceof File) {
+                    val = value.name;
+                    filename = value.name;
+                } else {
+                    val = value;
+                }
+                console.log(key + ': ' + val);
+            }
+            try {
+                const response = await fetch("{{ url_for('upload_file') }}", {
+                    method: "POST",
+                    // Set the FormData instance as the request body
+                    body: formData,
+                });
+                console.log(response);
+                return filename
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        function uploadAndPreview(){
+            uploadFile().then((filename) => {
+                MLResults = undefined;
+                clearlabel();
+                const img = document.getElementById("Preview");
+                img.src = "/uploads/" + filename;
+                drawLinkedBoxes(filename);
+                drawLinkLines(filename);
+            })
+        }
+    </script>
     <script>
         drawLinkedBoxes("{{ name }}")
         drawLinkLines("{{ name }}")
