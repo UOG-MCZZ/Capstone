@@ -9,8 +9,7 @@ async function getMLResults (name){
   const btns = document.getElementById("PreviewButtons")
   const imgContainer = document.getElementById("image-container")
 
-  img.src = "/uploads/" + name
-  img.addEventListener("load", (e) => {
+  const styleSetUp = (e) => {
     canva.width = img.width;
     canva.height = img.height;
     // ctx.drawImage(img, 0, 0);
@@ -21,13 +20,16 @@ async function getMLResults (name){
     img.style.position = "absolute"
     img.style.top = "0"
     img.style.left = "0"
+    img.removeEventListener("load", styleSetUp)
     imgContainer.appendChild(img)
     canva.style.maxWidth = "100%";
     canva.style.maxHeight = "90%";
     img.style.maxHeight = "90%";
     img.style.maxWidth = "100%";
     btns.style.top = img.offsetHeight + "px";
-  });
+  }
+  img.src = "/uploads/" + name
+  img.addEventListener("load", styleSetUp);
 
   return fetch("/process/" + name).then(res => res.json().then(j => {
     MLResults = j;
