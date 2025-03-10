@@ -13,14 +13,13 @@
     <body>
         <div class="container">
             <div class="content">
-                <div class="image-container" style="position: static; max-height: 75vh; overflow-y: hidden;">
-                    <img id="Preview" src="/uploads/{{name}}" style="position: absolute; max-height: 100%;">
-                    <canvas id="LabelPreview" style="position: absolute; z-index: 1;"></canvas>
+                <div class="image-container" id="image-container" style="position: relative; max-height: 75vh; overflow: hidden;">
+                    <canvas id="LabelPreview" style="position: absolute; z-index: 1; left: 0; top: 0;"></canvas>
                     <div id="PreviewButtons" style="position: relative;">
-                        <button onclick="clearlabel">Clear</button>
-                        <button onclick="() => drawAllBoxes('{{name}}')">All</button>
-                        <button onclick="() => drawLinkedBoxes('{{name}}')">Linked</button>
-                        <form id="uploadFileForm" onsubmit="uploadFile">
+                        <button id="ClearButton">Clear</button>
+                        <button id="AllButton">All</button>
+                        <button id="LinkedButton">Linked</button>
+                        <form id="uploadFileForm" onsubmit="uploadAndPreview">
                             <input type=file name=file>
                             <input type=submit value=Replace>
                         </form>
@@ -32,7 +31,6 @@
                         <input type="text" id="table_name" name="table_name" required value="{{table_name}}" disabled><br><br>   
                         <div id="fields-container">
                             <!-- Fields will be added dynamically here -->
-                        </div>
                         </div>
                         {% for key, value in new_key_val.items() %}
                             <script>addField('{{key}}', '{{value}}')</script>
@@ -74,7 +72,8 @@
                 console.error(e);
             }
         }
-        function uploadAndPreview(){
+        function uploadAndPreview(e){
+            e.preventDefault();
             uploadFile().then((filename) => {
                 MLResults = undefined;
                 clearlabel();
