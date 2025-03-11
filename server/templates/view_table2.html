@@ -6,7 +6,7 @@
 
 {% block content %}
     <body>
-        {% for freq, rows in rows[0]._fields %}
+        {% for freq, rows in data_tables %}
             <h2>{{ table_name }} {{freq}}</h2>
             <div class='table-container'>
                 <table>
@@ -24,9 +24,9 @@
                                 {% for column in row %}
                                     <td>{{ column }}</td>
                                 {% endfor %}
+                                <td><a href="{{url_for('view_cert_mec_table', table_name=table_name, cert_name=row[0])}}">MEC Table</a></td>
                             </tr>
                         {% endfor %}
-                        <tr><a href="/view_tables/{{row[0]}}/MEC_Table">View MEC tables</a></tr>
                     </tbody>
                 </table>
             </div>

@@ -185,20 +185,30 @@ def view_cert_table(table_name):
     # Query the table and get data (raw SQL query)
     frequencies = []
     results = []
-    db_frequencies = db.session.execute(text(f"SELECT DISTINCT(SureillanceFrequency) FROM {table_name}"))
-    for frequency in db_frequencies:
-        frequencies.append(frequency[0])
-        result = db.session.execute(text(f"SELECT * FROM {table_name} WHERE SureillanceFrequency = '{frequency}'"))
+    db_frequencies = db.session.execute(text(f"SELECT DISTINCT(SurveillanceFrequency) FROM {table_name};"))
+    for frequency in db_frequencies.fetchall():
+        frequency = frequency[0]
+        frequencies.append(frequency)
+        result = db.session.execute(text(f"SELECT * FROM {table_name} WHERE SurveillanceFrequency = '{frequency}';"))
         rows = result.fetchall()
         results.append(rows)
 
     return render_template('view_table2.html', data_tables=zip(frequencies, results), table_name=table_name)
 
+# Route to view Certification MEC Table
+@app.route('/view_cert_table/<table_name>/<cert_name>')
+def view_cert_mec_table(table_name, cert_name):
+    # Query the table and get data (raw SQL query)
+    result = db.session.execute(text(f"SELECT * FROM {table_name}_MEC WHERE InitialCBWCertNumber = '{cert_name}';"))
+    rows = result.fetchall()
+
+    return render_template('view_mec_table.html', rows=rows, table_name=table_name)
+
 # Route to view the newly created table
 @app.route('/view_table/<table_name>')
 def view_table(table_name):
     # Query the table and get data (raw SQL query)
-    result = db.session.execute(text(f"SELECT * FROM {table_name}"))
+    result = db.session.execute(text(f"SELECT * FROM {table_name};"))
     rows = result.fetchall()
 
     return render_template('view_table.html', rows=rows, table_name=table_name)

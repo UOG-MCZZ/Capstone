@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    View {{ cert_name }} MEC 
+{% endblock %}
+
+{% block content %}
+    <body>
+        <h2>{{ cert_name }} MEC Table</h2>
+        <div class='table-container'>
+            <table>
+                <thead>
+                    <tr>
+                        {% for column in rows[0]._fields %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            {% for column in row %}
+                                <td>{{ column }}</td>
+                            {% endfor %}
+                            <td><a href="/view_details/{{table_name}}/{{cert_name}}/{{form_name}}">View</a> / <a>update</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <a href="/Add_form/{{table_name}}/{{cert_name}}/">Upload New</a>
+        </div>
+    </body>
+{% endblock %}
