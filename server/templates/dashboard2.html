@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Create a New Table  
+{% endblock %}
+
+{% block script %}
+    <script >
+        function toggleCard(card) {
+            card.classList.toggle('expanded');
+        }        
+    </script>
+{% endblock %}
+
+<!-- Yeah, I gotta remake this -->
+<!-- This is just a base I have for now -->
+
+{% block content %}
+    <body>
+        <div class="main-content">
+            <h1>Overview</h1>
+            <div class="card">
+                <h3>Expiring in the next 3 months</h3>
+                {% for expiry_info in expiry_info_list %}
+                <p>{{expiry_info.table_name}}: expiry_info.count</p>
+                {% endfor %}
+            </div>
+
+            {% for table in tables %}
+            <div class="card" onclick="toggleCard(this)">
+                <h3>{{table.name}}</h3>
+                <p>Expiring: {{table.expiring}}</p>
+                <p>Completed: {{table.completed}}</p>
+                <div class="extra-info">
+                    <img src={{table.image}} id="{{table.name}}_chart"/>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </body>
+{% endblock %}
