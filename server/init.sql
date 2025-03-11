@@ -14,7 +14,7 @@ CREATE TABLE CLS1B (
     PRIMARY KEY (InitialCBWCertNumber)
 );
 
-INSERT INTO CLS1B VALUES ("CLS1B 12312 Rev. 00", "", "Maggie Ponzi Engineering", "6/5/2024", "7/5/2025", "7/11/2024", "First Surveillance Year", "6/5/2024", "", "7/5/2025", "Annually", "Fire Rated Doors");
+INSERT INTO CLS1B VALUES ('CLS1B 12312 Rev. 00', '', 'Maggie Ponzi Engineering', '2024-05-06', '2025-05-07', '2024-11-7', 'First Surveillance Year', '2024-05-06', '', '2025-05-07', 'Annually', 'Fire Rated Doors');
 
 CREATE TABLE CLS1B_MEC (
     InitialCBWCertNumber varchar(32),
@@ -29,4 +29,4 @@ CREATE TABLE CLS1B_MEC (
     FOREIGN KEY (InitialCBWCertNumber) REFERENCES CLS1B(InitialCBWCertNumber)
 );
 
-INSERT INTO CLS1B_MEC VALUES ("CLS1B 12312 Rev. 00", "Tommy DIck", "12094", "11/5/2024", "9/5/2024", "5/6/2024", "F", "21-Jun-24 Follow up with Lab")
+INSERT INTO CLS1B_MEC VALUES ('CLS1B 12312 Rev. 00', 'Tommy DIck', '12094', '2024-05-11', '2024-05-09', '2024-06-05', 'F', '21-Jun-24 Follow up with Lab');
