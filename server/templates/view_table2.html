@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    View {{ table_name }}  
+{% endblock %}
+
+{% block content %}
+    <body>
+        {% for freq, rows in rows[0]._fields %}
+            <h2>{{ table_name }} {{freq}}</h2>
+            <div class='table-container'>
+                <table>
+                    <thead>
+                        <tr>
+                            {% for column in rows[0]._fields %}
+                                <th>{{ column }}</th>
+                            {% endfor %}
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            <tr>
+                                {% for column in row %}
+                                    <td>{{ column }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                        <tr><a href="/view_tables/{{row[0]}}/MEC_Table">View MEC tables</a></tr>
+                    </tbody>
+                </table>
+            </div>
+        {% endfor %}
+    </body>
+{% endblock %}
