@@ -179,6 +179,21 @@ def create_table():
 
     return render_template('create_table.html')
 
+# Route to view Certification tables
+@app.route('/view_cert_table/<table_name>')
+def view_cert_table(table_name):
+    # Query the table and get data (raw SQL query)
+    frequencies = []
+    results = []
+    db_frequencies = db.session.execute(text(f"SELECT DISTINCT(SureillanceFrequency) FROM {table_name}"))
+    for frequency in db_frequencies:
+        frequencies.append(frequency[0])
+        result = db.session.execute(text(f"SELECT * FROM {table_name} WHERE SureillanceFrequency = '{frequency}'"))
+        rows = result.fetchall()
+        results.append(rows)
+
+    return render_template('view_table2.html', data_tables=zip(frequencies, results), table_name=table_name)
+
 # Route to view the newly created table
 @app.route('/view_table/<table_name>')
 def view_table(table_name):
