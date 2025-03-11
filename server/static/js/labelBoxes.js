@@ -1,26 +1,35 @@
 var MLResults = undefined
 
-function getMLResults (name){
-  if (MLResults) return new Promise(() => {return MLResults})
+async function getMLResults (name){
+  if (MLResults) return MLResults
 
   const canva = document.getElementById("LabelPreview")
   const ctx = canva.getContext("2d");
-  // const img = new Image();
-  const img = document.getElementById("Preview")
+  const img = new Image();
   const btns = document.getElementById("PreviewButtons")
-  
-  btns.style.top = img.height
-  // img.src = "/uploads/" + name
-  if (img.complete) {
+  const imgContainer = document.getElementById("image-container")
+
+  const styleSetUp = (e) => {
     canva.width = img.width;
     canva.height = img.height;
-    canva.style.width = img.style.width;
-    canva.style.height = img.style.height;
-  } else
-    img.addEventListener("load", () => {
-      canva.width = img.width;
-      canva.height = img.height;
-    });
+    // ctx.drawImage(img, 0, 0);
+    imgContainer.style.height = img.height+ "px";
+    imgContainer.style.width = img.width+ "px";
+    canva.width = img.width;
+    canva.height = img.height;
+    img.style.position = "absolute"
+    img.style.top = "0"
+    img.style.left = "0"
+    img.removeEventListener("load", styleSetUp)
+    imgContainer.appendChild(img)
+    canva.style.maxWidth = "100%";
+    canva.style.maxHeight = "90%";
+    img.style.maxHeight = "90%";
+    img.style.maxWidth = "100%";
+    btns.style.top = img.offsetHeight + "px";
+  }
+  img.src = "/uploads/" + name
+  img.addEventListener("load", styleSetUp);
 
   return fetch("/process/" + name).then(res => res.json().then(j => {
     MLResults = j;
@@ -83,7 +92,7 @@ function drawAllBoxes(name) {
 }
 
 function clearlabel () {
-  const canva = document.getElementById("Preview")
+  const canva = document.getElementById("LabelPreview")
   const ctx = canva.getContext("2d");
   ctx.clearRect(0,0,canva.width, canva.height)
 }
