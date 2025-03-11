@@ -27,12 +27,12 @@ function addField(fieldName, fieldValue) {
         fieldTypeSelect.appendChild(option);
     });
 
-    var removeButton = document.createElement('button');
-    removeButton.textContent = 'X';
-    removeButton.type = 'button';
-    removeButton.onclick = function() {
-        fieldDiv.remove();
-    };
+    // var removeButton = document.createElement('button');
+    // removeButton.textContent = 'X';
+    // removeButton.type = 'button';
+    // removeButton.onclick = function() {
+    //     fieldDiv.remove();
+    // };
 
     fieldDiv.appendChild(fieldNameInput);
     fieldDiv.appendChild(fieldValueInput);
