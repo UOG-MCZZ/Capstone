@@ -5,10 +5,26 @@
 {% endblock %}
 
 {% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script >
-        function toggleCard(card) {
+        function toggleCard(card, table_name) {
             card.classList.toggle('expanded');
-        }        
+            const canva = document.getElementById(table_name + "_chart");
+
+            return fetch("api/cert/" + table_name + "/monthly_summary").then(res => res.json().then(j => {
+                const myChart = new Chart(canva, {
+                    type: "bar",
+                    data:{
+                        labels: j.months,
+                        datasets: [
+                            {data: j.expired, backgroundColor: "red", label: "expired"}, 
+                            {data: j.expiring, backgroundColor: "green", label: "expiring"}, 
+                            {data: j.completed, backgroundColor: "blue", label: "completed"}
+                        ]
+                    }
+                });
+            }))
+        }
     </script>
 {% endblock %}
 
@@ -21,21 +37,26 @@
             <h1>Overview</h1>
             <div class="card">
                 <h3>Expiring in the next 3 months</h3>
-                {% for expiry_info in expiry_info_list %}
-                <p>{{expiry_info.table_name}}: expiry_info.count</p>
+                {% for table_name, expiring, completed, expired in expiry_info_list %}
+                <p>{{table_name}}: {{table_expiring}}</p>
                 {% endfor %}
             </div>
 
-            {% for table in tables %}
-            <div class="card" onclick="toggleCard(this)">
-                <h3>{{table.name}}</h3>
-                <p>Expiring: {{table.expiring}}</p>
-                <p>Completed: {{table.completed}}</p>
+            {% for table_name, expiring, completed, expired in expiry_info_list %}
+            <div class="card" onclick="toggleCard(this, '{{table_name}}')">
+                <h3>{{table_name}}</h3>
+                <p>Expired: {{expired}}</p>
+                <p>Expiring: {{expiring}}</p>
+                <p>Completed: {{completed}}</p>
                 <div class="extra-info">
-                    <img src={{table.image}} id="{{table.name}}_chart"/>
+                    <canvas id="{{table_name}}_chart"/>
                 </div>
             </div>
             {% endfor %}
         </div>
+        <div>
+            <canvas id="myChart"></canvas>
+          </div>
+          
     </body>
 {% endblock %}

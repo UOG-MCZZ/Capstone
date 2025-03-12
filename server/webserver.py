@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 from multiprocessing import freeze_support
 import regex as re
+from datetime import date
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import gptinf
@@ -212,6 +213,57 @@ def view_table(table_name):
     rows = result.fetchall()
 
     return render_template('view_table.html', rows=rows, table_name=table_name)
+
+# Route to view the newly created table
+@app.route('/dash')
+def dashboard2():
+    table_list = ["CLS1B"] # get this dynamically
+    expiry_info_list = []
+
+    # Query the table and get data (raw SQL query)
+    for table in table_list:
+        # can be faster with single query, need parse after tho, so? faster?
+        # expiring_result = db.session.execute(text(f"SELECT SurveillanceStatusMonitoring, COUNT(1) FROM {table} GROUP BY SurveillanceStatusMonitoring;")).fetchall()
+        expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Expiring';")).fetchone()
+        expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired';")).fetchone()
+        completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed';")).fetchone()
+        expiry_info_list.append((table, expiring_result[0], completed_result[0], expired_result[0]))
+
+    return render_template('dashboard2.html', expiry_info_list=expiry_info_list)
+
+#route to get information of each month
+@app.route("/api/cert/<table_name>/monthly_summary")
+def get_certificate_monthly_summary(table_name):
+    d = date.today().replace(day=1)
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    expiring = []
+    expired = []
+    completed = []
+
+    for month_idx, month in enumerate(months, 1):
+        d = d.replace(month=month_idx)
+        date_str = str(d)
+        print(d)
+        if d.month < date.today().month:
+            print("before", month)
+            expiring_result = [0]
+            expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
+            completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
+        elif d.month == date.today().month:
+            print("current", month)
+            expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
+            completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
+            expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring != 'Surveillance Completed'  AND SurveillanceStatusMonitoring != 'Surveillance Expired' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 3 month;;")).fetchone()
+        else:
+            print("after", month)
+            expired_result = [0]
+            expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring != 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 3 month;")).fetchone()
+            completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
+        expired.append(expired_result[0])
+        expiring.append(expiring_result[0])
+        completed.append(completed_result[0])
+
+    return {"months": months, "expiring": expiring, "completed": completed, "expired": expired}
 
 # Route to add new file information to the table
 @app.route('/table/<table_name>/process/<file_name>', methods=["GET", "POST"])
