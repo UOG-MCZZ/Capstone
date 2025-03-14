@@ -11,7 +11,7 @@
             card.classList.toggle('expanded');
             const canva = document.getElementById(table_name + "_chart");
 
-            return fetch("api/cert/" + table_name + "/monthly_summary").then(res => res.json().then(j => {
+            fetch("api/get/cert/" + table_name + "/monthly_summary").then(res => res.json().then(j => {
                 const myChart = new Chart(canva, {
                     type: "bar",
                     data:{

@@ -203,7 +203,7 @@ def view_cert_mec_table(table_name, cert_name):
     result = db.session.execute(text(f"SELECT * FROM {table_name}_MEC WHERE InitialCBWCertNumber = '{cert_name}';"))
     rows = result.fetchall()
 
-    return render_template('view_mec_table.html', rows=rows, table_name=table_name)
+    return render_template('view_mec_table.html', rows=rows, table_name=table_name, cert_name=cert_name)
 
 # Route to view the newly created table
 @app.route('/view_table/<table_name>')
@@ -232,7 +232,7 @@ def dashboard2():
     return render_template('dashboard2.html', expiry_info_list=expiry_info_list)
 
 #route to get information of each month
-@app.route("/api/cert/<table_name>/monthly_summary")
+@app.route("/api/get/cert/<table_name>/monthly_summary")
 def get_certificate_monthly_summary(table_name):
     d = date.today().replace(day=1)
     months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -243,19 +243,15 @@ def get_certificate_monthly_summary(table_name):
     for month_idx, month in enumerate(months, 1):
         d = d.replace(month=month_idx)
         date_str = str(d)
-        print(d)
         if d.month < date.today().month:
-            print("before", month)
             expiring_result = [0]
             expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
             completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
         elif d.month == date.today().month:
-            print("current", month)
             expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
             completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
             expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring != 'Surveillance Completed'  AND SurveillanceStatusMonitoring != 'Surveillance Expired' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 3 month;;")).fetchone()
         else:
-            print("after", month)
             expired_result = [0]
             expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring != 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 3 month;")).fetchone()
             completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table_name} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed' AND SurveillanceYearEndDate between '{date_str}' and '{date_str}' + interval 1 month;")).fetchone()
@@ -265,53 +261,37 @@ def get_certificate_monthly_summary(table_name):
 
     return {"months": months, "expiring": expiring, "completed": completed, "expired": expired}
 
-# Route to add new file information to the table
-@app.route('/table/<table_name>/process/<file_name>', methods=["GET", "POST"])
-def add_form_to_table(table_name, file_name):
-    if request.method == 'POST':
-        # table_name = request.form['table_name']
-        # field_names = request.form.getlist('field_name[]')  # Get field names
-        field_values = request.form.getlist('field_value[]')  # Get field names
-        field_types = request.form.getlist('field_type[]')  # Get field types
+@app.route("/api/get/cert/<table_name>/<cert_name>/<SurveillanceSN>")
+def get_mec_info(table_name, cert_name, SurveillanceSN):
+    # Query the table and get data (raw SQL query)
+    result = db.session.execute(text(f"SELECT * FROM {table_name}_MEC WHERE SurveillanceSN = '{SurveillanceSN}';"))
+    row = result.fetchone()
+    print(list(zip(row._fields, row._t)))
 
-        #Change this for something useful later
-        insert_value = []
-        for field_value, field_type in zip(field_values, field_types):
-            if field_type == 'String':
-                insert_value.append(f'"{field_value}"')
-            elif field_type == 'Integer':
-                insert_value.append(f'{field_value}')
-            elif field_type == 'Boolean':
-                insert_value.append(f'"{field_value}"')
-        insert_sql = ", ".join(insert_value)
-        insert_statement = text(f"INSERT INTO {table_name} VALUES({insert_sql})")
-        db.session.execute(insert_statement)
+    return list(zip(row._fields, row._t))
+
+# Route to add view DB information with an image
+@app.route('/view_cert_table/<table_name>/<cert_name>/<SurveillanceSN>', methods=["GET", "POST"])
+def view_current_table_data(table_name, cert_name, SurveillanceSN):
+    if request.method == 'POST':
+        table_name = request.form['table_name']
+        field_names = request.form.getlist('field_name[]')  # Get field names
+        field_values = request.form.getlist('field_value[]')  # Get field names
+        # field_types = request.form.getlist('field_type[]')  # Get field types
+
+        sn_index = field_names.index("SurveillanceSN")
+        #This one should be an UPdate
+        update_value = []
+        for field_name, field_value in zip(field_names, field_values):
+            update_value.append(f"{field_name} = '{field_value}'")
+        update_sql = ", ".join(update_value)
+        update_statement = text(f"UPDATE {table_name}_MEC SET {update_sql} WHERE SurveillanceSN = '{field_values[sn_index]}'")
+        db.session.execute(update_statement)
         db.session.commit()
         
-        return redirect(url_for("view_table", table_name=table_name))
+        return redirect(url_for("view_cert_mec_table", table_name=table_name, cert_name=cert_name))
 
-    # Query the table and get data (raw SQL query)
-    # To try a better method of getting column names
-    db_result = db.session.execute(text(f"SELECT * FROM {table_name}"))
-    rows = db_result.fetchall()
-    new_key_val = dict()
-    # column_names = []
-    for column in rows[0]._fields:
-        # column_names.append(column)
-        new_key_val[column] = ""
-
-    results = process_document(file_name)
-    for key, val in results["key_val"]:
-        field_name = re.sub('[^A-Za-z0-9 ]+', '', key)
-        field_name = field_name.lstrip().rstrip()
-        if field_name in new_key_val.keys():
-            new_key_val[field_name] = val
-
-    print(new_key_val)
-    print(type(new_key_val))
-    for key, val in new_key_val.items():
-        print(key, val)
-    return render_template("ExistingFormResultsPreview.html", new_key_val=new_key_val, key_val=results["key_val"], name=file_name, table_name=table_name)
+    return render_template("ExistingFormResultsPreview.html", name=SurveillanceSN, table_name=table_name, cert_name=cert_name, SurveillanceSN=SurveillanceSN)
 
 # Home route
 @app.route('/')

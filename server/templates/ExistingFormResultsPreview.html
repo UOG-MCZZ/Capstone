@@ -28,13 +28,10 @@
                 <div class="form-container" >
                     <form method="POST">
                         <label for="table_name">Table Name:</label>
-                        <input type="text" id="table_name" name="table_name" required value="{{table_name}}" disabled><br><br>   
+                        <input type="text" id="table_name" name="table_name" required value="{{table_name}}" readonly><br><br>   
                         <div id="fields-container">
                             <!-- Fields will be added dynamically here -->
                         </div>
-                        {% for key, value in new_key_val.items() %}
-                            <script>addField('{{key}}', '{{value}}')</script>
-                        {% endfor %}  
                         <button type="submit">Modify Data</button>
                     </form>
                 </div>
@@ -50,6 +47,7 @@
         allBtn.onclick = (e) => drawAllBoxes("{{ name }}")
         drawLinkedBoxes("{{ name }}")
         drawLinkLines("{{ name }}")
+        addFieldsFromDB("{{table_name}}","{{cert_name}}","{{SurveillanceSN}}")
     </script>
     <script>
         async function uploadFile(){
@@ -85,7 +83,8 @@
                 MLResults = undefined;
                 clearlabel();
                 const imgContainer = document.getElementById("image-container")
-                imgContainer.removeChild(imgContainer.lastChild)
+                while (imgContainer.lastChild.nodeName == "IMG")
+                    imgContainer.removeChild(imgContainer.lastChild)
                 drawLinkedBoxes(filename);
                 drawLinkLines(filename);
                 linkBtn.onclick = (e) => {drawLinkedBoxes(filename); drawLinkLines(filename)}

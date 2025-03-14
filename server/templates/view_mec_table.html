@@ -23,7 +23,7 @@
                             {% for column in row %}
                                 <td>{{ column }}</td>
                             {% endfor %}
-                            <td><a href="/view_details/{{table_name}}/{{cert_name}}/{{form_name}}">View</a> / <a>update</a></td>
+                            <td><a href="/view_cert_table/{{table_name}}/{{cert_name}}/{{row[2]}}">View / Update</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
