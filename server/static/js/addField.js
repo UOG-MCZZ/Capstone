@@ -10,6 +10,14 @@ function addField(fieldName, fieldValue) {
     fieldNameInput.value = fieldName;
     fieldNameInput.required = true;
 
+    var columnNameInput = document.createElement('input');
+    columnNameInput.setAttribute('type', 'text');
+    columnNameInput.setAttribute('name', 'column_name[]');
+    columnNameInput.setAttribute('placeholder', 'Column name');
+    columnNameInput.setAttribute('pattern', '[a-zA-Z0-9]+');
+    columnNameInput.value = fieldName.replace(/[^a-zA-Z0-9]/g, "");
+    columnNameInput.required = true;
+
     var fieldValueInput = document.createElement('input');
     fieldValueInput.setAttribute('type', 'text');
     fieldValueInput.setAttribute('name', 'field_value[]');
@@ -25,7 +33,7 @@ function addField(fieldName, fieldValue) {
         option.textContent = type;
         fieldTypeSelect.appendChild(option);
     });
-    
+
     fieldTypeSelect.onchange = (evt) => {
         if (evt.target.value == "Date"){
             const d = new Date(fieldValueInput.value)
@@ -48,6 +56,7 @@ function addField(fieldName, fieldValue) {
     };
 
     fieldDiv.appendChild(fieldNameInput);
+    fieldDiv.appendChild(columnNameInput);
     fieldDiv.appendChild(fieldValueInput);
     fieldDiv.appendChild(fieldTypeSelect);
     fieldDiv.appendChild(removeButton);

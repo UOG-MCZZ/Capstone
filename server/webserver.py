@@ -146,8 +146,12 @@ def new_table():
     if request.method == 'POST':
         table_name = request.form['table_name']
         field_names = request.form.getlist('field_name[]')  # Get field names
+        column_names = request.form.getlist('column_name[]')  # Get field names
         field_values = request.form.getlist('field_value[]')  # Get field names
         field_types = request.form.getlist('field_type[]')  # Get field types
+
+        if len(field_names) != len(set(field_names)): return "duplicate field name", 400
+        if len(column_names) != len(set(column_names)): return "duplicate column name", 400
         print("field names contain:", field_names)
         for i in range(len(field_names)):
             field_names[i] = re.sub('[^A-Za-z0-9 ]+', '', field_names[i])
@@ -173,16 +177,23 @@ def new_table():
         db.session.execute(create_table_sql)
         db.session.commit()
 
+        # Prepare SQL statement to link form fields to column names
+        for field_name, column_name in zip(field_names, column_names):
+            values = (f"('{table_name}', '{field_name}', '{column_name}')")
+            create_sql = text(f"INSERT INTO FormColumnConverter (TableName, FormFieldName, ColumnName) VALUES {values} ON DUPLICATE KEY UPDATE ColumnName = '{column_name}';")
+            db.session.execute(create_sql)
+        db.session.commit()
+
         #Change this for something useful later
         insert_value = []
         # for i in range(len(field_values)):
         for field_value, field_type in zip(field_values, field_types):
             if field_type == 'String':
-                insert_value.append(f'"{field_value}"')
+                insert_value.append(f"'{field_value}'")
             elif field_type == 'Integer':
-                insert_value.append(f'{field_value}')
+                insert_value.append(f"{field_value}")
             elif field_type == 'Boolean':
-                insert_value.append(f'"{field_value}"')
+                insert_value.append(f"'{field_value}'")
         insert_sql = ", ".join(insert_value)
         insert_statement = text(f"INSERT INTO {table_name} VALUES({insert_sql})")
         db.session.execute(insert_statement)
