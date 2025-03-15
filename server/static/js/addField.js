@@ -18,13 +18,27 @@ function addField(fieldName, fieldValue) {
 
     var fieldTypeSelect = document.createElement('select');
     fieldTypeSelect.setAttribute('name', 'field_type[]');
-    var types = ['String', 'Integer', 'Boolean'];
+    var types = ['String', 'Integer', 'Boolean', 'Date'];
     types.forEach(function(type) {
         var option = document.createElement('option');
         option.setAttribute('value', type);
         option.textContent = type;
         fieldTypeSelect.appendChild(option);
     });
+    
+    fieldTypeSelect.onchange = (evt) => {
+        if (evt.target.value == "Date"){
+            const d = new Date(fieldValueInput.value)
+            fieldValueInput.setAttribute('type', 'date')
+            if (d == "Invalid Date"){
+                fieldValueInput.valueAsDate = Date.now()
+            } else{
+                fieldValueInput.valueAsDate = d
+            }
+        }else{
+            fieldValueInput.setAttribute('type', 'text');
+        }
+    }
 
     var removeButton = document.createElement('button');
     removeButton.textContent = 'X';

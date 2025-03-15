@@ -141,6 +141,58 @@ def preview_results(name2):
     results = process_document(name2)
     return render_template("demo.html", key_val=results["key_val"], name=name2)
 
+@app.route('/new_table', methods=['GET', 'POST'])
+def new_table():
+    if request.method == 'POST':
+        table_name = request.form['table_name']
+        field_names = request.form.getlist('field_name[]')  # Get field names
+        field_values = request.form.getlist('field_value[]')  # Get field names
+        field_types = request.form.getlist('field_type[]')  # Get field types
+        print("field names contain:", field_names)
+        for i in range(len(field_names)):
+            field_names[i] = re.sub('[^A-Za-z0-9 ]+', '', field_names[i])
+            field_names[i] = field_names[i].lstrip().rstrip()
+
+        # Prepare SQL statement to create the table
+        columns = []
+        for field_name, field_type in zip(field_names, field_types):
+            if field_type == 'String':
+                columns.append(f'`{field_name}` VARCHAR(255)')
+            elif field_type == 'Integer':
+                columns.append(f'`{field_name}` INT')
+            elif field_type == 'Boolean':
+                columns.append(f'`{field_name}` BOOLEAN')
+            # Add more types if necessary
+
+        # Create the SQL query to create the new table
+        columns_sql = ", ".join(columns)
+        print(columns_sql)
+        create_table_sql = text(f"CREATE TABLE IF NOT EXISTS {table_name} ({columns_sql});")
+
+        # Execute the raw SQL to create the table
+        db.session.execute(create_table_sql)
+        db.session.commit()
+
+        #Change this for something useful later
+        insert_value = []
+        # for i in range(len(field_values)):
+        for field_value, field_type in zip(field_values, field_types):
+            if field_type == 'String':
+                insert_value.append(f'"{field_value}"')
+            elif field_type == 'Integer':
+                insert_value.append(f'{field_value}')
+            elif field_type == 'Boolean':
+                insert_value.append(f'"{field_value}"')
+        insert_sql = ", ".join(insert_value)
+        insert_statement = text(f"INSERT INTO {table_name} VALUES({insert_sql})")
+        db.session.execute(insert_statement)
+        db.session.commit()
+
+        return redirect(url_for('view_table', table_name=table_name))
+
+
+    return render_template("new_table.html")
+
 # Route to create dynamic table
 @app.route('/create_table', methods=['GET', 'POST'])
 def create_table():
