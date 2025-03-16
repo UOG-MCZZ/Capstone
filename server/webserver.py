@@ -338,15 +338,16 @@ def get_mec_info(table_name, cert_name, SurveillanceSN):
 def view_current_table_data(table_name, cert_name, SurveillanceSN):
     if request.method == 'POST':
         table_name = request.form['table_name']
-        field_names = request.form.getlist('field_name[]')  # Get field names
-        field_values = request.form.getlist('field_value[]')  # Get field names
+        # field_names = request.form.getlist('field_name[]')  # Get field names
+        column_names = request.form.getlist('column_name[]')  # Get column names
+        field_values = request.form.getlist('field_value[]')  # Get field values
         # field_types = request.form.getlist('field_type[]')  # Get field types
 
-        sn_index = field_names.index("SurveillanceSN")
+        sn_index = column_names.index("SurveillanceSN")
         #This one should be an UPdate
         update_value = []
-        for field_name, field_value in zip(field_names, field_values):
-            update_value.append(f"{field_name} = '{field_value}'")
+        for column_names_name, field_value in zip(column_names, field_values):
+            update_value.append(f"{column_names_name} = '{field_value}'")
         update_sql = ", ".join(update_value)
         update_statement = text(f"UPDATE {table_name}_MEC SET {update_sql} WHERE SurveillanceSN = '{field_values[sn_index]}'")
         db.session.execute(update_statement)
@@ -354,7 +355,19 @@ def view_current_table_data(table_name, cert_name, SurveillanceSN):
         
         return redirect(url_for("view_cert_mec_table", table_name=table_name, cert_name=cert_name))
 
+    # table_name += "_MEC"
     return render_template("ExistingFormResultsPreview.html", name=SurveillanceSN, table_name=table_name, cert_name=cert_name, SurveillanceSN=SurveillanceSN)
+
+# Route to get the conversion info from form field to column name
+@app.route('/api/get_table_conversion/<table_name>')
+def get_table_converter(table_name):
+    sql = text(f"SELECT * FROM  FormColumnConverter WHERE TableName = '{table_name}';")
+    rows = db.session.execute(sql).fetchall()
+    ret = {}
+    for tableName, form_name, column_name in rows:
+        ret[form_name] = column_name
+    print(ret)
+    return ret
 
 # Home route
 @app.route('/')

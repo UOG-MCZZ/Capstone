@@ -15,7 +15,7 @@ function addField(fieldName, fieldValue) {
     columnNameInput.setAttribute('name', 'column_name[]');
     columnNameInput.setAttribute('placeholder', 'Column name');
     columnNameInput.setAttribute('pattern', '[a-zA-Z0-9]+');
-    columnNameInput.value = fieldName.replace(/[^a-zA-Z0-9]/g, "");
+    columnNameInput.value = fieldName.replace(/[^a-zA-Z0-9]/g, "").trim();
     columnNameInput.required = true;
 
     var fieldValueInput = document.createElement('input');
@@ -39,7 +39,7 @@ function addField(fieldName, fieldValue) {
             const d = new Date(fieldValueInput.value)
             fieldValueInput.setAttribute('type', 'date')
             if (d == "Invalid Date"){
-                fieldValueInput.valueAsDate = Date.now()
+                fieldValueInput.valueAsNumber = Date.now()
             } else{
                 fieldValueInput.valueAsDate = d
             }

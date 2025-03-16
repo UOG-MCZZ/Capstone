@@ -15,7 +15,7 @@
             <div class="content">
                 <div class="image-container" id="image-container" style="position: relative; max-height: 75vh; overflow: hidden;">
                     <canvas id="LabelPreview" style="position: absolute; z-index: 1; left: 0; top: 0;"></canvas>
-                    <div id="PreviewButtons" style="position: relative;">
+                    <div id="PreviewButtons" style="position: relative; z-index: 2;">
                         <button id="ClearButton">Clear</button>
                         <button id="AllButton">All</button>
                         <button id="LinkedButton">Linked</button>
@@ -45,8 +45,8 @@
         linkBtn.onclick = (e) => {drawLinkedBoxes("{{ name }}"); drawLinkLines("{{ name }}")}
         const allBtn = document.getElementById("AllButton")
         allBtn.onclick = (e) => drawAllBoxes("{{ name }}")
-        drawLinkedBoxes("{{ name }}")
-        drawLinkLines("{{ name }}")
+        drawLinkedBoxes("{{ name }}.jpg")
+        drawLinkLines("{{ name }}.jpg")
         addFieldsFromDB("{{table_name}}","{{cert_name}}","{{SurveillanceSN}}")
     </script>
     <script>
@@ -89,6 +89,36 @@
                 drawLinkLines(filename);
                 linkBtn.onclick = (e) => {drawLinkedBoxes(filename); drawLinkLines(filename)}
                 allBtn.onclick = (e) => drawAllBoxes(filename)
+                
+                let cleanedResults = {}
+                getMLResults(filename).then((MLResults) => {
+                    for (const [key, val] of MLResults["key_val"]){
+                        cleanedKey = key.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+                        cleanedResults[cleanedKey] = val;
+                    }
+                    getFieldsToColumnNames("{{table_name}}", "{{cert_name}}").then((converter) => {
+                        console.log(converter, cleanedResults)
+                        for (const fieldName in converter){
+                            console.log("checking for ", fieldName, " in", cleanedResults[fieldName])
+                            if (fieldName in cleanedResults){
+                                console.log("updating ", fieldName)
+                                const inputField = document.getElementById(converter[fieldName] + "_valueInput")
+                                const inputType = document.getElementById(converter[fieldName] + "_typeInput")
+                                if (inputType.value == "Date"){
+                                    const d = new Date(cleanedResults[fieldName])
+                                    console.log(d)
+                                    if (d == "Invalid Date"){
+                                        inputField.valueAsNumber = Date.now()
+                                    } else{
+                                        inputField.valueAsDate = d
+                                    }
+                                } else
+                                    inputField.value = cleanedResults[fieldName]
+                            }
+                        }
+                    })
+                });
+                
             })
         })
     </script>
