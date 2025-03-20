@@ -48,9 +48,7 @@ function drawLinkedBoxes (name) {
       let box = [...bbox[0], ...bbox[2]];
       box[3] = box[3] - box[1];
       box[2] = box[2] - box[0];
-      console.log(MLResults["pred"][i])
-      console.log(box)
-      ctx.lineWidth = Math.floor((canva.height + canva.width) / 200) + 1;
+      ctx.lineWidth = Math.floor((canva.height + canva.width) / 400) + 1;
       ctx.strokeStyle = id2color[MLResults["pred"][i]]
       ctx .strokeRect(...box);
     }
@@ -65,7 +63,6 @@ function drawLinkLines(name) {
     ctx.strokeStyle = "black"
     for (var i = 0; i < MLResults["links"].length; i++){
       const link = MLResults["links"][i]
-      console.log(link);
       let box = link[0];
       ctx.moveTo(...box[1]);
       box = link[1]

@@ -55,7 +55,7 @@ function addField(fieldName, columnName, fieldValue) {
     }
 
     const d = new Date(fieldValue)
-    if (isISODate(fieldValue) && d != "Invalid Date"){
+    if (isDate(fieldValue) && d != "Invalid Date"){
         fieldTypeSelect.value = 'Date'
         const d = new Date(fieldValueInput.value)
         fieldValueInput.setAttribute('type', 'date')
@@ -94,6 +94,17 @@ function addFieldsFromDB(table_name, cert_name, SurveillanceSN) {
             }
         })
     }))
+}
+
+function addBlankFields(table_name, cert_name) {
+    getFieldsToColumnNames(table_name, cert_name).then((converter) => {
+        console.log(converter)
+        for (const fieldName in converter){
+            if (fieldName.includes("Cert")) addField(fieldName, converter[fieldName], cert_name)
+            else if (fieldName.includes("Date")) addField(fieldName, converter[fieldName], new Date())
+            else addField(fieldName, converter[fieldName], "")
+        }
+    })
 }
 
 async function getFieldsToColumnNames(table_name, cert_name){

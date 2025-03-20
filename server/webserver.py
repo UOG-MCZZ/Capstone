@@ -8,7 +8,8 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 from multiprocessing import freeze_support
 import regex as re
-from datetime import date
+from datetime import date, datetime
+import pandas as pd
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import gptinf
@@ -64,6 +65,54 @@ def upload_file():
     </form>
     '''
 
+def insert_main_row(row, table_name=""):
+    insert_value = []
+    for key, value in row.items():
+        if pd.isnull(value) or pd.isna(value):
+            insert_value.append("NULL")
+        elif isinstance(value, datetime):
+            insert_value.append(f"'{value.strftime('%Y-%m-%d')}'")
+        else:
+            insert_value.append(f"'{value}'")
+
+    insert_sql = ", ".join(insert_value)
+    insert_statement = text(f"INSERT INTO {table_name} VALUES({insert_sql})")
+
+    try:
+        db.session.execute(insert_statement)
+        db.session.commit()
+    except:
+        return False
+    return True
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_excel_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            # return redirect(url_for('download_file', name=filename))
+    return '''
+    <!doctype html>
+    <title>Upload Excel File</title>
+    <h1>Upload Excel File</h1>
+    <form method=post enctype=multipart/form-data>
+      <input type=file name=file>
+      <input type=submit value=Upload>
+    </form>
+    '''
+
 @app.route('/uploads/<name>')
 def download_file(name):
     print(safe_join(app.config["UPLOAD_FOLDER"], name))
@@ -84,62 +133,6 @@ def process_document(name):
     # class_results = server.webDocParser.runInference(img)
     # print(type(results))
     return {"links": results["link_boxes"], "key_val": results["key_val"], "pred": results["classes"], "boxes": results["block_bboxes"], "ocr_boxes": results["ocr_boxes"]}
-
-@app.route('/preview/<name2>', methods=['GET', 'POST'])
-def preview_results(name2):
-    if request.method == 'POST':
-        table_name = request.form['table_name']
-        field_names = request.form.getlist('field_name[]')  # Get field names
-        field_values = request.form.getlist('field_value[]')  # Get field names
-        field_types = request.form.getlist('field_type[]')  # Get field types
-        print("field names contain:", field_names)
-        for i in range(len(field_names)):
-            field_names[i] = re.sub('[^A-Za-z0-9 ]+', '', field_names[i])
-            field_names[i] = field_names[i].lstrip().rstrip()
-
-        # Prepare SQL statement to create the table
-        columns = []
-        for field_name, field_type in zip(field_names, field_types):
-            if field_type == 'String':
-                columns.append(f'`{field_name}` VARCHAR(255)')
-            elif field_type == 'Integer':
-                columns.append(f'`{field_name}` INT')
-            elif field_type == 'Boolean':
-                columns.append(f'`{field_name}` BOOLEAN')
-            # Add more types if necessary
-
-        # Create the SQL query to create the new table
-        columns_sql = ", ".join(columns)
-        print(columns_sql)
-        create_table_sql = text(f"CREATE TABLE IF NOT EXISTS {table_name} ({columns_sql});")
-
-        # Execute the raw SQL to create the table
-        db.session.execute(create_table_sql)
-        db.session.commit()
-
-        #Change this for something useful later
-        insert_value = []
-        # for i in range(len(field_values)):
-        for field_value, field_type in zip(field_values, field_types):
-            if field_type == 'String':
-                insert_value.append(f'"{field_value}"')
-            elif field_type == 'Integer':
-                insert_value.append(f'{field_value}')
-            elif field_type == 'Boolean':
-                insert_value.append(f'"{field_value}"')
-        insert_sql = ", ".join(insert_value)
-        insert_statement = text(f"INSERT INTO {table_name} VALUES({insert_sql})")
-        db.session.execute(insert_statement)
-        db.session.commit()
-
-        return '''
-    <!doctype html>
-    <title>Table Created Successfully</title>
-    <h1>Table Created Successfully!</h1>
-    '''
-
-    results = process_document(name2)
-    return render_template("demo.html", key_val=results["key_val"], name=name2)
 
 @app.route('/new_table', methods=['GET', 'POST'])
 def new_table():
@@ -166,6 +159,8 @@ def new_table():
                 columns.append(f'`{field_name}` INT')
             elif field_type == 'Boolean':
                 columns.append(f'`{field_name}` BOOLEAN')
+            elif field_type == 'Date':
+                columns.append(f'`{field_name}` DATE')
             # Add more types if necessary
 
         # Create the SQL query to create the new table
@@ -188,11 +183,9 @@ def new_table():
         insert_value = []
         # for i in range(len(field_values)):
         for field_value, field_type in zip(field_values, field_types):
-            if field_type == 'String':
-                insert_value.append(f"'{field_value}'")
-            elif field_type == 'Integer':
+            if field_type == 'Integer':
                 insert_value.append(f"{field_value}")
-            elif field_type == 'Boolean':
+            else:
                 insert_value.append(f"'{field_value}'")
         insert_sql = ", ".join(insert_value)
         insert_statement = text(f"INSERT INTO {table_name} VALUES({insert_sql})")
@@ -203,45 +196,6 @@ def new_table():
 
 
     return render_template("new_table.html")
-
-# Route to create dynamic table
-@app.route('/create_table', methods=['GET', 'POST'])
-def create_table():
-    if request.method == 'POST':
-        table_name = request.form['table_name']
-        field_names = request.form.getlist('field_name[]')  # Get field names
-        field_types = request.form.getlist('field_type[]')  # Get field types
-
-        # Prepare SQL statement to create the table
-        columns = []
-        for field_name, field_type in zip(field_names, field_types):
-            if field_type == 'String':
-                columns.append(f"{field_name} VARCHAR(255)")
-            elif field_type == 'Integer':
-                columns.append(f"{field_name} INT")
-            elif field_type == 'Boolean':
-                columns.append(f"{field_name} BOOLEAN")
-            # Add more types if necessary
-
-        # Create the SQL query to create the new table
-        print(columns)
-        columns_sql = ", ".join(columns)
-        print(columns_sql)
-        create_table_sql = text(f"CREATE TABLE IF NOT EXISTS {table_name} ({columns_sql});")
-
-        # Execute the raw SQL to create the table
-        db.session.execute(create_table_sql)
-        db.session.commit()
-
-        #Change this for something useful later
-        return '''
-    <!doctype html>
-    <title>Table Created Successfully</title>
-    <h1>Table Created Successfully!</h1>
-    '''
-        # return redirect(url_for('view_table', table_name=table_name))
-
-    return render_template('create_table.html')
 
 # Route to view Certification tables
 @app.route('/view_cert_table/<table_name>')
@@ -358,6 +312,41 @@ def view_current_table_data(table_name, cert_name, SurveillanceSN):
     # table_name += "_MEC"
     return render_template("ExistingFormResultsPreview.html", name=SurveillanceSN, table_name=table_name, cert_name=cert_name, SurveillanceSN=SurveillanceSN)
 
+# Route to add view DB information with an image
+@app.route('/add_cert_table/<table_name>/<cert_name>', methods=["GET", "POST"])
+def add_cert_table_data(table_name, cert_name):
+    if request.method == 'POST':
+        table_name = request.form['table_name']
+        # field_names = request.form.getlist('field_name[]')  # Get field names
+        column_names = request.form.getlist('column_name[]')  # Get column names
+        field_values = request.form.getlist('field_value[]')  # Get field values
+        field_types = request.form.getlist('field_type[]')  # Get field types
+        print(table_name)
+
+        # prepare column names for insert
+        column_values = []
+        for column_name in column_names:
+            column_values.append(f"`{column_name}`")
+        column_sql = ", ".join(column_values)
+
+        insert_value = []
+        # for i in range(len(field_values)):
+        for field_value, field_type in zip(field_values, field_types):
+            if field_type == 'Integer':
+                insert_value.append(f"{field_value}")
+            else:
+                insert_value.append(f"'{field_value}'")
+        insert_sql = ", ".join(insert_value)
+        insert_statement = text(f"INSERT INTO {table_name} ({column_sql}) VALUES({insert_sql})")
+        db.session.execute(insert_statement)
+        db.session.commit()
+        
+        if table_name.endswith("_MEC"): table_name = table_name[:-4] 
+        return redirect(url_for("view_cert_mec_table", table_name=table_name, cert_name=cert_name))
+
+    # table_name += "_MEC"
+    return render_template("add_to_existing_table.html", table_name=table_name, cert_name=cert_name)
+
 # Route to get the conversion info from form field to column name
 @app.route('/api/get_table_conversion/<table_name>')
 def get_table_converter(table_name):
@@ -377,9 +366,3 @@ def index():
 if __name__ == '__main__':
     freeze_support()
     app.run(port = 12494, debug=True)
-
-
-
-
-
-

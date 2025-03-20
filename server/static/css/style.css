@@ -32,11 +32,13 @@ img {
     display: flex;
     align-items: flex-end; 
     padding: 15px 20px;
+    z-index: 99;
 }
 
 .nav-container {
     display: flex;
     align-items: flex-end;
+    z-index: inherit;
 }
 .nav-item {
     position: relative;
