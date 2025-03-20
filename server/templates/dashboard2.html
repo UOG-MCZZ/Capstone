@@ -34,11 +34,11 @@
 {% block content %}
     <body>
         <div class="main-content">
-            <h1>Overview</h1>
+            <h1  class="page-header">Overview</h1>
             <div class="card">
                 <h3>Expiring in the next 3 months</h3>
                 {% for table_name, expiring, completed, expired in expiry_info_list %}
-                <p>{{table_name}}: {{table_expiring}}</p>
+                <p>{{table_name}}: {{expiring}}</p>
                 {% endfor %}
             </div>
 

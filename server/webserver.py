@@ -19,7 +19,7 @@ from werkzeug.security import safe_join
 
 
 UPLOAD_FOLDER = './media/'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'xlsx'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -34,9 +34,22 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Route to view the newly created table
 @app.route('/')
 def dasboard():
-        return render_template('dashboard.html')
+    table_list = ["CLS1B"] # get this dynamically
+    expiry_info_list = []
+
+    # Query the table and get data (raw SQL query)
+    for table in table_list:
+        # can be faster with single query, need parse after tho, so? faster?
+        # expiring_result = db.session.execute(text(f"SELECT SurveillanceStatusMonitoring, COUNT(1) FROM {table} GROUP BY SurveillanceStatusMonitoring;")).fetchall()
+        expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Expiring';")).fetchone()
+        expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired';")).fetchone()
+        completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed';")).fetchone()
+        expiry_info_list.append((table, expiring_result[0], completed_result[0], expired_result[0]))
+
+    return render_template('dashboard2.html', expiry_info_list=expiry_info_list)
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -65,7 +78,7 @@ def upload_file():
     </form>
     '''
 
-def insert_main_row(row, table_name=""):
+def insert_cert_row(row, table_name=""):
     insert_value = []
     for key, value in row.items():
         if pd.isnull(value) or pd.isna(value):
@@ -81,12 +94,13 @@ def insert_main_row(row, table_name=""):
     try:
         db.session.execute(insert_statement)
         db.session.commit()
-    except:
-        return False
-    return True
+    except Exception as e:
+        print(e)
+        return "Failed"
+    return "Passed"
 
-@app.route('/upload', methods=['GET', 'POST'])
-def upload_excel_file():
+@app.route('/upload_excel/<table_name>', methods=['GET', 'POST'])
+def upload_excel_file(table_name):
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -100,18 +114,12 @@ def upload_excel_file():
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-            # return redirect(url_for('download_file', name=filename))
-    return '''
-    <!doctype html>
-    <title>Upload Excel File</title>
-    <h1>Upload Excel File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+            cert_sheet = pd.read_excel(filepath, sheet_name="SurvSheet")
+            results = cert_sheet.apply(insert_cert_row, axis=1, result_type="reduce", table_name=table_name)
+            return render_template("upload_excel.html", table_name=table_name, results=zip(cert_sheet["Initial CBW Cert No."], results), fail_count=results.value_counts()["Failed"])
+    return render_template("upload_excel.html", table_name=table_name)
 
 @app.route('/uploads/<name>')
 def download_file(name):
@@ -231,23 +239,6 @@ def view_table(table_name):
 
     return render_template('view_table.html', rows=rows, table_name=table_name)
 
-# Route to view the newly created table
-@app.route('/dash')
-def dashboard2():
-    table_list = ["CLS1B"] # get this dynamically
-    expiry_info_list = []
-
-    # Query the table and get data (raw SQL query)
-    for table in table_list:
-        # can be faster with single query, need parse after tho, so? faster?
-        # expiring_result = db.session.execute(text(f"SELECT SurveillanceStatusMonitoring, COUNT(1) FROM {table} GROUP BY SurveillanceStatusMonitoring;")).fetchall()
-        expiring_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Expiring';")).fetchone()
-        expired_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Expired';")).fetchone()
-        completed_result = db.session.execute(text(f"SELECT COUNT(1) FROM {table} WHERE SurveillanceStatusMonitoring = 'Surveillance Completed';")).fetchone()
-        expiry_info_list.append((table, expiring_result[0], completed_result[0], expired_result[0]))
-
-    return render_template('dashboard2.html', expiry_info_list=expiry_info_list)
-
 #route to get information of each month
 @app.route("/api/get/cert/<table_name>/monthly_summary")
 def get_certificate_monthly_summary(table_name):
@@ -357,11 +348,6 @@ def get_table_converter(table_name):
         ret[form_name] = column_name
     print(ret)
     return ret
-
-# Home route
-@app.route('/')
-def index():
-    return 'Welcome to the dynamic table app!'
 
 if __name__ == '__main__':
     freeze_support()

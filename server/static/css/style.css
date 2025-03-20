@@ -207,7 +207,16 @@ img {
 .table-container tr:hover {
     background-color: #f9f9f9;
 }
-
+.page-header{
+    width: 95%; 
+    margin: 0 auto;
+    padding-bottom: 1rem;
+}
+.additional-section{
+    width: 95%; 
+    margin: 0 auto;
+    padding-top: 1rem;
+}
 
 
 /* demmo.html */
@@ -273,6 +282,19 @@ button {
     cursor: pointer;
     transition: 0.3s ease-in-out;
     margin-top: 10px;
+}
+
+a.button {
+    background: #0047AB;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    margin-top: 10px;
+    text-decoration: none;
 }
 
 .field-group{

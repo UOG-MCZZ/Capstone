@@ -7,7 +7,7 @@
 {% block content %}
     <body>
         {% for freq, rows in data_tables %}
-            <h2>{{ table_name }} {{freq}}</h2>
+            <h2 class="page-header">{{ table_name }} {{freq}}</h2>
             <div class='table-container'>
                 <table>
                     <thead>
@@ -24,11 +24,14 @@
                                 {% for column in row %}
                                     <td>{{ column }}</td>
                                 {% endfor %}
-                                <td><a href="{{url_for('view_cert_mec_table', table_name=table_name, cert_name=row[0])}}">MEC Table</a></td>
+                                <td><a href="{{url_for('view_cert_mec_table', table_name=table_name, cert_name=row[0])}}" class="button">View MEC</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+            <div class="additional-section">
+                <a href="{{url_for('upload_excel_file', table_name=table_name)}}" class="button">Upload Excel</a>
             </div>
         {% endfor %}
     </body>

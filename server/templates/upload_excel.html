@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    View {{ table_name }}  
+{% endblock %}
+
+{% block content %}
+    <body>
+        <h2 class="page-header">Upload Excel for {{ table_name }}</h2>
+        {% if results %}
+        <div class='table-container'>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Initial CBW Cert No.</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, result in results %}
+                        <tr>
+                            <td>{{name}}</td>
+                            <td>{{result}}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="additional-section">
+            Failed: {{fail_count}}
+        </div>
+        {% endif %}
+        <div class="additional-section">
+            <form method=post enctype=multipart/form-data>
+                <input type=file name=file>
+                <input type=submit value=Upload>
+            </form>
+        </div>
+    </body>
+{% endblock %}

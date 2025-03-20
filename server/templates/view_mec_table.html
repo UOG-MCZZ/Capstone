@@ -6,7 +6,8 @@
 
 {% block content %}
     <body>
-        <h2>{{ cert_name }} MEC Table</h2>
+        <h2 class="page-header">{{ cert_name }} MEC Table</h2>
+        {% if rows|length %}
         <div class='table-container'>
             <table>
                 <thead>
@@ -23,14 +24,15 @@
                             {% for column in row %}
                                 <td>{{ column }}</td>
                             {% endfor %}
-                            <td><a href="/view_cert_table/{{table_name}}/{{cert_name}}/{{row[2]}}">View / Update</a></td>
+                            <td><a href="/view_cert_table/{{table_name}}/{{cert_name}}/{{row[2]}}" class="button">View / Update</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
-        <div>
-            <a href="/add_cert_table/{{table_name}}/{{cert_name}}">Upload New</a>
+        {% endif %}
+        <div class="additional-section">
+            <a href="/add_cert_table/{{table_name}}/{{cert_name}}" class="button">Upload New</a>
         </div>
     </body>
 {% endblock %}
