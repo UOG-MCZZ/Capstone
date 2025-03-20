@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    View {{ table_name }}  
+{% endblock %}
+
+{% block content %}
+    <body>
+        <h2 class="page-header">Created Tables</h2>
+        <div class='table-container'>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Table Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for table_name in table_names %}
+                        <tr>
+                            <td>{{ table_name }}</td>
+                            <td><a href="{{url_for('view_table', table_name=table_name)}}" class="button">View</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="additional-section">
+            <a href="{{url_for('new_table')}}" class="button">Create New Table</a>
+        </div>
+    </body>
+{% endblock %}

@@ -239,6 +239,52 @@ def view_table(table_name):
 
     return render_template('view_table.html', rows=rows, table_name=table_name)
 
+# Route to view the list of created tables
+@app.route('/view_created_tables/')
+def view_created_tables():
+    # Query the table and get data (raw SQL query)
+    result = db.session.execute(text(f"SHOW TABLES WHERE tables_in_dynamic_tables NOT LIKE 'CLS%' AND tables_in_dynamic_tables != 'FormColumnConverter';"))
+    rows = result.fetchall()
+    table_names = []
+    for row in rows:
+        table_names.append(row[0])
+
+    return render_template('view_created_tables.html', table_names=table_names)
+
+#Route to add data to created tables
+@app.route('/add_table/<table_name>', methods=["GET", "POST"])
+def add_table_data(table_name):
+    if request.method == 'POST':
+        table_name = request.form['table_name']
+        # field_names = request.form.getlist('field_name[]')  # Get field names
+        column_names = request.form.getlist('column_name[]')  # Get column names
+        field_values = request.form.getlist('field_value[]')  # Get field values
+        field_types = request.form.getlist('field_type[]')  # Get field types
+        print(table_name)
+
+        # prepare column names for insert
+        column_values = []
+        for column_name in column_names:
+            column_values.append(f"`{column_name}`")
+        column_sql = ", ".join(column_values)
+
+        insert_value = []
+        # for i in range(len(field_values)):
+        for field_value, field_type in zip(field_values, field_types):
+            if field_type == 'Integer':
+                insert_value.append(f"{field_value}")
+            else:
+                insert_value.append(f"'{field_value}'")
+        insert_sql = ", ".join(insert_value)
+        insert_statement = text(f"INSERT INTO {table_name} ({column_sql}) VALUES({insert_sql})")
+        db.session.execute(insert_statement)
+        db.session.commit()
+        
+        if table_name.endswith("_MEC"): table_name = table_name[:-4] 
+        return redirect(url_for("view_table", table_name=table_name))
+
+    return render_template("add_to_existing_table.html", table_name=table_name)
+
 #route to get information of each month
 @app.route("/api/get/cert/<table_name>/monthly_summary")
 def get_certificate_monthly_summary(table_name):
