@@ -160,15 +160,15 @@ def new_table():
 
         # Prepare SQL statement to create the table
         columns = []
-        for field_name, field_type in zip(field_names, field_types):
+        for column_name, field_type in zip(column_names, field_types):
             if field_type == 'String':
-                columns.append(f'`{field_name}` VARCHAR(255)')
+                columns.append(f'`{column_name}` VARCHAR(255)')
             elif field_type == 'Integer':
-                columns.append(f'`{field_name}` INT')
+                columns.append(f'`{column_name}` INT')
             elif field_type == 'Boolean':
-                columns.append(f'`{field_name}` BOOLEAN')
+                columns.append(f'`{column_name}` BOOLEAN')
             elif field_type == 'Date':
-                columns.append(f'`{field_name}` DATE')
+                columns.append(f'`{column_name}` DATE')
             # Add more types if necessary
 
         # Create the SQL query to create the new table
@@ -382,7 +382,7 @@ def add_cert_table_data(table_name, cert_name):
         return redirect(url_for("view_cert_mec_table", table_name=table_name, cert_name=cert_name))
 
     # table_name += "_MEC"
-    return render_template("add_to_existing_table.html", table_name=table_name, cert_name=cert_name)
+    return render_template("add_to_existing_mec_table.html", table_name=table_name, cert_name=cert_name)
 
 # Route to get the conversion info from form field to column name
 @app.route('/api/get_table_conversion/<table_name>')
