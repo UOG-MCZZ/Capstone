@@ -48,11 +48,11 @@ CREATE EVENT dailystatusupdate ON SCHEDULE EVERY 1 DAY DO UPDATE CLS1B cert LEFT
 	ON mec.SurveillanceSN = (SELECT mec2.SurveillanceSN FROM CLS1B_MEC mec2 WHERE mec2.InitialCBWCertNumber = cert.InitialCBWCertNumber ORDER BY mec2.SurveilanceDate DESC LIMIT 1)
     SET cert.SurveillanceStatusMonitoring = CASE 
 		WHEN cert.SurveillanceYearStartDate < mec.TestCompletionDate < cert.SurveillanceYearEndDate THEN 'Surveillance Completed'
-        WHEN cert.SurveillanceYearEndDate < current_date() THEN 'Surveilence Expired'
-        WHEN DATEDIFF(CURRENT_DATE(), cert.SurveillanceYearEndDate) < 90 THEN 'Surveilence Expiring'
+        WHEN cert.SurveillanceYearEndDate < current_date() THEN 'Surveillance Expired'
+        WHEN DATEDIFF(CURRENT_DATE(), cert.SurveillanceYearEndDate) < 90 THEN 'Surveillance Expiring'
 		WHEN cert.Revision IS NULL THEN 'First Surveillance Peroid'
         ELSE 'Follow-up Surveillance' END
-	WHERE cert.SurveillanceStatusMonitoring != 'Surveillance Completed' AND cert.SurveillanceStatusMonitoring != 'Surveilence Expired';
+	WHERE cert.SurveillanceStatusMonitoring != 'Surveillance Completed' AND cert.SurveillanceStatusMonitoring != 'Surveillance Expired';
 
 CREATE TABLE FormColumnConverter (
     TableName varchar(64),
