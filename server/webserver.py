@@ -12,7 +12,7 @@ from datetime import date, datetime
 import pandas as pd
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import gptinf
+import inference
 
 
 from werkzeug.security import safe_join
@@ -137,7 +137,7 @@ def list_files():
 @app.route('/process/<name>')
 def process_document(name):
     img = Image.open(os.path.join(app.config['UPLOAD_FOLDER'], name))
-    results = gptinf.get_rel(img)
+    results = inference.get_rel(img)
     # class_results = server.webDocParser.runInference(img)
     # print(type(results))
     return {"links": results["link_boxes"], "key_val": results["key_val"], "pred": results["classes"], "boxes": results["block_bboxes"], "ocr_boxes": results["ocr_boxes"]}
